@@ -1,20 +1,24 @@
-﻿param(
+﻿# UTF-8 encoding setup
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+
+param(
   [int]$QuietSeconds = 60,
   [int]$LargeDiffLines = 100,
   [int]$LargeDiffFiles = 3
 )
 
-# スクリプトの場所へ移動（どこから起動しても .git が見つかるように）
+# Move to script directory
 $here = $PSScriptRoot
 if (-not $here) { $here = Split-Path -Parent $PSCommandPath }
 if (-not $here) { $here = Split-Path -Parent $MyInvocation.MyCommand.Path }
 Set-Location -Path $here
 
-# ログファイルの設定
+# Log file setup
 $logFile = "auto-commit.log"
 $ErrorActionPreference = "Continue"
 $root = (Get-Location).Path
-Write-Host "Watching $root ..." | Tee-Object -FilePath $logFile -Append
+Write-Host "Watching $root ..." | Out-File -FilePath $logFile -Append -Encoding UTF8
 
 $fsw = New-Object System.IO.FileSystemWatcher $root, "*"
 $fsw.IncludeSubdirectories = $true
@@ -53,7 +57,9 @@ function Get-DiffStats {
       LinesChanged = $added + $deleted
     }
   } catch {
-    Write-Warning "Git操作でエラーが発生しました: $_" | Tee-Object -FilePath $logFile -Append
+    $errorMsg = "Git operation error: $_"
+    Write-Warning $errorMsg
+    $errorMsg | Out-File -FilePath $logFile -Append -Encoding UTF8
     return [pscustomobject]@{
       Files = @()
       NumFiles = 0
@@ -95,61 +101,95 @@ while ($true) {
   try {
     $gitStatus = git status --porcelain 2>&1
     if (-not $gitStatus) { 
-      Write-Host "$timestamp - 変更なし" | Tee-Object -FilePath $logFile -Append
+      $msg = "$timestamp - No changes"
+      Write-Host $msg
+      $msg | Out-File -FilePath $logFile -Append -Encoding UTF8
       continue 
     }
 
-    Write-Host "$timestamp - 変更を検出しました" | Tee-Object -FilePath $logFile -Append
+    $msg = "$timestamp - Changes detected"
+    Write-Host $msg
+    $msg | Out-File -FilePath $logFile -Append -Encoding UTF8
+    
     $stats = Get-DiffStats
     if ($stats.NumFiles -eq 0) { 
       git reset 2>&1 | Out-Null
-      Write-Host "$timestamp - ステージングをリセットしました" | Tee-Object -FilePath $logFile -Append
+      $msg = "$timestamp - Staging reset"
+      Write-Host $msg
+      $msg | Out-File -FilePath $logFile -Append -Encoding UTF8
       continue 
     }
 
     $isLarge = ($stats.LinesChanged -ge $LargeDiffLines) -or ($stats.NumFiles -ge $LargeDiffFiles)
     $msg = New-CommitMessage $stats $isLarge
 
-    Write-Host "$timestamp - コミット実行中: $($stats.NumFiles)ファイル, $($stats.LinesChanged)行" | Tee-Object -FilePath $logFile -Append
+    $commitMsg = "$timestamp - Committing: $($stats.NumFiles) files, $($stats.LinesChanged) lines"
+    Write-Host $commitMsg
+    $commitMsg | Out-File -FilePath $logFile -Append -Encoding UTF8
+    
     $commitResult = git commit -m $msg 2>&1
     if ($LASTEXITCODE -eq 0) {
-      Write-Host "$timestamp - コミット成功" | Tee-Object -FilePath $logFile -Append
+      $successMsg = "$timestamp - Commit successful"
+      Write-Host $successMsg
+      $successMsg | Out-File -FilePath $logFile -Append -Encoding UTF8
     } else {
-      Write-Warning "$timestamp - コミット失敗: $commitResult" | Tee-Object -FilePath $logFile -Append
+      $errorMsg = "$timestamp - Commit failed: $commitResult"
+      Write-Warning $errorMsg
+      $errorMsg | Out-File -FilePath $logFile -Append -Encoding UTF8
       continue
     }
 
     if ($isLarge) {
       $branch = "auto/" + (Get-Date -Format "yyyyMMdd-HHmmss")
-      Write-Host "$timestamp - 大きな変更を検出、ブランチ作成: $branch" | Tee-Object -FilePath $logFile -Append
+      $branchMsg = "$timestamp - Large change detected, creating branch: $branch"
+      Write-Host $branchMsg
+      $branchMsg | Out-File -FilePath $logFile -Append -Encoding UTF8
+      
       git switch -c $branch 2>&1 | Out-Null
       $pushResult = git push -u origin $branch 2>&1
       if ($LASTEXITCODE -eq 0) {
-        Write-Host "$timestamp - ブランチプッシュ成功" | Tee-Object -FilePath $logFile -Append
+        $pushSuccessMsg = "$timestamp - Branch push successful"
+        Write-Host $pushSuccessMsg
+        $pushSuccessMsg | Out-File -FilePath $logFile -Append -Encoding UTF8
+        
         try {
           $title = ("{0}: large auto update" -f $branch)
           $prResult = gh pr create --fill --title $title --body "Auto-generated PR for large change." 2>&1
           if ($LASTEXITCODE -eq 0) {
-            Write-Host "$timestamp - PR作成成功" | Tee-Object -FilePath $logFile -Append
+            $prSuccessMsg = "$timestamp - PR created successfully"
+            Write-Host $prSuccessMsg
+            $prSuccessMsg | Out-File -FilePath $logFile -Append -Encoding UTF8
           } else {
-            Write-Warning "$timestamp - PR作成失敗: $prResult" | Tee-Object -FilePath $logFile -Append
+            $prErrorMsg = "$timestamp - PR creation failed: $prResult"
+            Write-Warning $prErrorMsg
+            $prErrorMsg | Out-File -FilePath $logFile -Append -Encoding UTF8
           }
         } catch { 
-          Write-Warning "$timestamp - PR作成エラー: $_" | Tee-Object -FilePath $logFile -Append
+          $prExceptionMsg = "$timestamp - PR creation error: $_"
+          Write-Warning $prExceptionMsg
+          $prExceptionMsg | Out-File -FilePath $logFile -Append -Encoding UTF8
         }
       } else {
-        Write-Warning "$timestamp - ブランチプッシュ失敗: $pushResult" | Tee-Object -FilePath $logFile -Append
+        $pushErrorMsg = "$timestamp - Branch push failed: $pushResult"
+        Write-Warning $pushErrorMsg
+        $pushErrorMsg | Out-File -FilePath $logFile -Append -Encoding UTF8
       }
       git switch - 2>&1 | Out-Null
     } else {
       $pushResult = git push 2>&1
       if ($LASTEXITCODE -eq 0) {
-        Write-Host "$timestamp - プッシュ成功" | Tee-Object -FilePath $logFile -Append
+        $pushSuccessMsg = "$timestamp - Push successful"
+        Write-Host $pushSuccessMsg
+        $pushSuccessMsg | Out-File -FilePath $logFile -Append -Encoding UTF8
       } else {
-        Write-Warning "$timestamp - プッシュ失敗: $pushResult" | Tee-Object -FilePath $logFile -Append
+        $pushErrorMsg = "$timestamp - Push failed: $pushResult"
+        Write-Warning $pushErrorMsg
+        $pushErrorMsg | Out-File -FilePath $logFile -Append -Encoding UTF8
       }
     }
   } catch {
-    Write-Warning "$timestamp - エラーが発生しました: $_" | Tee-Object -FilePath $logFile -Append
+    $exceptionMsg = "$timestamp - Error occurred: $_"
+    Write-Warning $exceptionMsg
+    $exceptionMsg | Out-File -FilePath $logFile -Append -Encoding UTF8
   }
 }

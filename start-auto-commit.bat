@@ -1,10 +1,11 @@
 @echo off
-echo GitHub自動転送システムを開始します...
-echo ログファイル: auto-commit.log
-echo 停止するには Ctrl+C を押してください
+chcp 65001 >nul
+echo Starting GitHub Auto-Commit System...
+echo Log file: auto-commit.log
+echo Press Ctrl+C to stop
 echo.
 
 cd /d "%~dp0"
-powershell -ExecutionPolicy Bypass -File "auto-commit.ps1"
+powershell -ExecutionPolicy Bypass -Command "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; & '.\auto-commit.ps1'"
 
 pause
