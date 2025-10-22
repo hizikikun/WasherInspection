@@ -4,6 +4,13 @@
   [int]$LargeDiffFiles = 5
 )
 
+# スクリプトの場所へ移動（どこから起動しても .git が見つかるように）
+$here = $PSScriptRoot
+if (-not $here) { $here = Split-Path -Parent $PSCommandPath }
+if (-not $here) { $here = Split-Path -Parent $MyInvocation.MyCommand.Path }
+Set-Location -Path $here
+
+
 $ErrorActionPreference = "Stop"
 $root = (Get-Location).Path
 Write-Host "Watching $root ..."
@@ -52,7 +59,7 @@ function New-CommitMessage([pscustomobject]$stats, [bool]$isLarge) {
     $top = ($stats.Files | Select-Object -First 1)
     $scope = "(" + ($top -replace "[\\/].*$","") + ")"
   }
-  $summary = "$type$scope: auto update - $($stats.NumFiles) files, $($stats.LinesChanged) lines"
+  $summary = ("{0}{1}: auto update - {2} files, {3} lines" -f $type, $scope, $stats.NumFiles, $stats.LinesChanged)
   $body = @(
     "Changed files:",
     ($stats.Files | ForEach-Object { "- $_" })
@@ -88,7 +95,8 @@ while ($true) {
     git switch -c $branch | Out-Null
     git push -u origin $branch
     try {
-      gh pr create --fill --title "$branch: large auto update" --body "Auto-generated PR for large change."
+      $title = ("{0}: large auto update" -f $branch)
+      gh pr create --fill --title $title --body "Auto-generated PR for large change."
     } catch { Write-Warning $_ }
   } else {
     git push
