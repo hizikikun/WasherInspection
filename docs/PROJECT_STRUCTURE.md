@@ -15,11 +15,11 @@ WasherInspection/
 │   └── ...
 │
 ├── 📁 github_tools/                    # GitHub統合ツール
-│   ├── github_auto_commit_system.py
-│   ├── integrated_github_system.py
-│   ├── code_training_auto_sync.py
-│   ├── cursor_github_integration.py
-│   ├── auto_github_token_creator.py
+│   ├── github_sync.py
+│   ├── github_autocommit.py
+│   ├── auto_sync.py
+│   ├── cursor_integration.py
+│   ├── token_setup.py
 │   └── ...
 │
 ├── 📁 config/                          # 設定ファイル
