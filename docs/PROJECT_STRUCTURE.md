@@ -5,13 +5,13 @@
 ```
 WasherInspection/
 ├── 📄 main.py                          # メインシステム（メインの検査システム）
-├── 📄 improved_multi_camera_selection_step5.py  # カメラ検査システム
+├── 📄 camera_inspection.py             # カメラ検査システム
 │
 ├── 📁 scripts/                         # 学習・分析スクリプト
-│   ├── clear_progress_sparse_modeling_four_class_ensemble.py
-│   ├── advanced_deep_learning_with_spatial_modeling.py
-│   ├── ultra_high_accuracy_ensemble.py
-│   ├── four_class_ultra_high_accuracy_ensemble.py
+│   ├── train_4class_sparse_ensemble.py
+│   ├── train_2class_with_augmentation.py
+│   ├── train_2class_ensemble.py
+│   ├── train_4class_ensemble.py
 │   └── ...
 │
 ├── 📁 github_tools/                    # GitHub統合ツール
@@ -74,19 +74,19 @@ WasherInspection/
 ```bash
 python main.py
 # または
-python improved_multi_camera_selection_step5.py
+python camera_inspection.py
 ```
 
 ### 2. AI学習実行
 ```bash
 cd scripts
-python clear_progress_sparse_modeling_four_class_ensemble.py
+python train_4class_sparse_ensemble.py
 ```
 
 ### 3. GitHub自動同期起動
 ```bash
 cd github_tools
-python integrated_github_system.py
+python github_sync.py
 ```
 
 ## 📊 データ統計

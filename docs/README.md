@@ -30,23 +30,27 @@ pip install -r requirements.txt
 ### 2. カメラ検査システム起動
 ```bash
 # メインの検査システム
-python improved_multi_camera_selection_step5.py
+python camera_inspection.py
+```
 
-# 高精度AI検査システム
-python clear_progress_sparse_modeling_four_class_ensemble.py
+### 3. AI学習実行
+```bash
+# 4クラス分類学習（スパースモデリング）
+cd scripts
+python train_4class_sparse_ensemble.py
 ```
 
 ## 📁 プロジェクト構成
 
 ### メインファイル
-- `improved_multi_camera_selection_step5.py` - メインの検査システム
-- `clear_progress_sparse_modeling_four_class_ensemble.py` - AI学習システム
 - `main.py` - 統合システム
+- `camera_inspection.py` - カメラ検査システム
 
-### AI学習システム
-- `advanced_deep_learning_with_spatial_modeling.py` - 空間モデリング学習
-- `ultra_high_accuracy_ensemble.py` - アンサンブル学習
-- `four_class_ultra_high_accuracy_ensemble.py` - 4クラス分類
+### AI学習システム（scripts/）
+- `train_4class_sparse_ensemble.py` - 4クラス分類（スパースモデリング）
+- `train_2class_with_augmentation.py` - 2クラス分類（データ拡張付き）
+- `train_2class_ensemble.py` - 2クラス分類アンサンブル学習
+- `train_4class_ensemble.py` - 4クラス分類アンサンブル学習
 
 ### カメラシステム
 - `color_camera_fix.py` - カメラ色調整
@@ -110,7 +114,7 @@ python clear_progress_sparse_modeling_four_class_ensemble.py
 
 ### 1. カメラ検査
 ```bash
-python improved_multi_camera_selection_step5.py
+python camera_inspection.py
 ```
 - 全カメラを起動
 - グリッド表示でカメラ選択
@@ -118,7 +122,8 @@ python improved_multi_camera_selection_step5.py
 
 ### 2. AI学習
 ```bash
-python clear_progress_sparse_modeling_four_class_ensemble.py
+cd scripts
+python train_4class_sparse_ensemble.py
 ```
 - 4クラス分類学習
 - スパースモデリング適用
