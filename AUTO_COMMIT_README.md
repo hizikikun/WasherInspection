@@ -101,3 +101,6 @@ Get-Process | Where-Object {$_.ProcessName -like "*powershell*"}
 ## サポート
 
 問題が発生した場合は、`auto-commit.log`ファイルの内容を確認してください。
+
+
+

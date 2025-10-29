@@ -214,3 +214,46 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Washer Inspection Project Specific
+# Large model files (upload separately)
+*.h5
+*.hdf5
+
+# Training logs and data
+*.csv
+*.log
+*.json
+
+# Build and distribution files
+build/
+dist/
+*.spec
+
+# Virtual environment
+.venv/
+venv/
+
+# Large data directories
+cs_AItraining_data/
+learning_data/
+resin_washer_data/
+sample_training_data/
+ai_learning_analysis/
+feedback_data/
+no_visualization_defect_model/
+real_image_defect_model/
+resin_washer_model/
+
+# Temporary files
+*.tmp
+*.temp
+encoding-test.log
+inspection_*.jpg
+
+# Auto-commit files
+auto-commit.ps1
+start-auto-commit.bat
+setup-auto-commit.xml
+test-*.ps1
+test-file.txt
