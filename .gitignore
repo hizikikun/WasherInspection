@@ -257,3 +257,12 @@ start-auto-commit.bat
 setup-auto-commit.xml
 test-*.ps1
 test-file.txt
+
+# Organization scripts (temporary tools)
+organize_files.py
+organize_github_files.py
+rename_files.py
+rename_remaining_files.py
+
+# Backup directories (except if needed)
+backup/
