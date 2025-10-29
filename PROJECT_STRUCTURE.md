@@ -50,17 +50,18 @@ WasherInspection/
 
 ### メインシステム
 - **main.py**: メインのワッシャー検査システム
-- **improved_multi_camera_selection_step5.py**: カメラ選択・検査システム
+- **camera_inspection.py**: カメラ選択・検査システム
 
 ### AI学習スクリプト（scripts/）
-- **clear_progress_sparse_modeling_four_class_ensemble.py**: 4クラス分類（スパースモデリング）
-- **advanced_deep_learning_with_spatial_modeling.py**: 高度な空間モデリング学習
-- **ultra_high_accuracy_ensemble.py**: 超高性能アンサンブル学習
+- **train_4class_sparse_ensemble.py**: 4クラス分類（スパースモデリング）
+- **train_2class_with_augmentation.py**: 2クラス分類（データ拡張付き）
+- **train_2class_ensemble.py**: 2クラス分類アンサンブル学習
+- **train_4class_ensemble.py**: 4クラス分類アンサンブル学習
 
 ### GitHub統合ツール（github_tools/）
-- **github_auto_commit_system.py**: 自動コミットシステム
-- **integrated_github_system.py**: 統合GitHubシステム
-- **code_training_auto_sync.py**: コード・データ自動同期
+- **github_sync.py**: 統合GitHub同期システム
+- **github_autocommit.py**: 自動コミットシステム
+- **auto_sync.py**: コード・データ自動同期
 
 ### 設定ファイル（config/）
 - **github_config.json**: GitHub設定
