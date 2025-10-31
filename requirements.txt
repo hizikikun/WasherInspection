@@ -15,6 +15,15 @@ Pillow==10.1.0
 # Utilities
 pathlib2==2.3.7
 tqdm==4.66.1
+psutil==5.9.6
+
+# GitHub Integration
+GitPython==3.1.45
+requests==2.32.3
+
+# Network Communication
+websockets==12.0
+asyncio-mqtt==0.16.1
 
 # Optional: For better performance
 # tensorflow-gpu==2.15.0  # Uncomment if you have CUDA support

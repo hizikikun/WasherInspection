@@ -1,0 +1,35 @@
+{
+  "timestamp": "2025-10-29T23:06:46.207006",
+  "summary": {
+    "total_files": 1461,
+    "total_size_mb": 565.0348072052002,
+    "classes": 4,
+    "date_range": {
+      "earliest": "2025-10-21",
+      "latest": "2025-10-29"
+    }
+  },
+  "class_distribution": {
+    "black_spot": 88,
+    "chipping": 117,
+    "good": 1144,
+    "scratch": 112
+  },
+  "class_sizes_mb": {
+    "black_spot": 30.166261672973633,
+    "chipping": 28.673669815063477,
+    "good": 431.6397018432617,
+    "scratch": 74.55517387390137
+  },
+  "daily_counts": {
+    "2025-10-22": 540,
+    "2025-10-28": 174,
+    "2025-10-21": 266,
+    "2025-10-27": 102,
+    "2025-10-29": 379
+  },
+  "recommendations": [
+    "Class imbalance detected - consider collecting more data for minority classes",
+    "No training data added today - consider collecting new samples"
+  ]
+}

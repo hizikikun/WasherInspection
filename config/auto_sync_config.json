@@ -1,0 +1,13 @@
+{
+  "github_token": "",
+  "github_owner": "your-username",
+  "github_repo": "washer-inspection-code",
+  "code_path": ".",
+  "training_data_path": "cs_AItraining_data",
+  "backup_path": "backup",
+  "sync_interval_minutes": 5,
+  "auto_commit": true,
+  "auto_organize_training": true,
+  "include_code_files": [".py", ".json", ".md", ".yml", ".yaml", ".txt"],
+  "exclude_dirs": ["__pycache__", ".git", "node_modules", ".vscode", "backup"]
+}
