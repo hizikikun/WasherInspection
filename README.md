@@ -1,149 +1,90 @@
-# Washer Inspection System
+# ワッシャー不良品検出システム
 
-樹脂ワッシャー検査システム - AI搭載の高精度欠陥検出システム
+## 概要
+AIを活用した樹脂製ワッシャーの不良品検出システムです。6種類の不良品（良品、黒点、欠け、傷、歪み、凹み）を高精度で分類できまム。
 
-## 🎯 概要
+## 特徴
+- **6クラス分類**: 良品、黒点、欠け、傷、歪み、凹みを検出
+- **リアルタイム検査**: カメラからの即座な判定
+- **高精度学習**: EfficientNetベースのアンサンブル学習
+- **使いやムいUI**: 直感的な操作インターフェース
 
-このプロジェクトは、樹脂ワッシャーの品質検査を自動化するAI搭載システムです。複数のカメラを使用してリアルタイムで欠陥を検出し、4クラス分類（good, black_spot, chipping, scratch）を行います。
+## ディレクトリ構造
 
-## ✨ 主な機能
+### 📁 trainers/ - 学習システム
+- `six_class_trainer.py` - 6クラス学習システム（推奨）
+- `high_quality_trainer.py` - 高品質学習システム
+- `optimized_trainer.py` - 最適化学習システム
+- `basic_trainer.py` - 基本学習システム
 
-- **マルチカメラ対応**: 複数のカメラを同時起動・選択可能
-- **フルHD対応**: C920n Pro HD webcam等の高解像度カメラに対応
-- **AI欠陥検出**: EfficientNetベースの4クラス分類システム
-- **スパースモデリング**: L1/L2正則化による高精度モデル
-- **アンサンブル学習**: 複数モデルの組み合わせによる高精度
-- **リアルタイム処理**: ライブカメラフィードでの即座な判定
+### 📁 inspectors/ - 検査システム
+- `six_class_inspector.py` - 6クラス検査システム（推奨）
+- `camera_inspector.py` - カメラ検査システム
+- `realtime_inspector.py` - リアルタイム検査システム
+- `multi_camera_inspector.py` - 複数カメラ検査システム
 
-## 🚀 クイックスタート
+### 📁 utilities/ - ユーティリティ
+- `install_dependencies.py` - 依存関係インストール
+- `run_training.py` - 学習実行スクリプト
+- `generate_samples.py` - サンプルデータ生成
+- `system_checker.py` - システムチェック
 
-### 1. 環境構築
+## セットアップ
+
+### 1. 依存関係のインストール
 ```bash
-# 仮想環境作成
-python -m venv washer_env
-washer_env\Scripts\activate
-
-# 依存関係インストール
-pip install -r requirements.txt
+python utilities/install_dependencies.py
 ```
 
-### 2. カメラ検査システム起動
+### 2. サンプルデータの生成
 ```bash
-# メインの検査システム
-python improved_multi_camera_selection_step5.py
-
-# 高精度AI検査システム
-python clear_progress_sparse_modeling_four_class_ensemble.py
+python utilities/generate_samples.py
 ```
 
-## 📁 プロジェクト構成
+## 使用方法
 
-### メインファイル
-- `improved_multi_camera_selection_step5.py` - メインの検査システム
-- `clear_progress_sparse_modeling_four_class_ensemble.py` - AI学習システム
-- `main.py` - 統合システム
-
-### AI学習システム
-- `advanced_deep_learning_with_spatial_modeling.py` - 空間モデリング学習
-- `ultra_high_accuracy_ensemble.py` - アンサンブル学習
-- `four_class_ultra_high_accuracy_ensemble.py` - 4クラス分類
-
-### カメラシステム
-- `color_camera_fix.py` - カメラ色調整
-- `robust_color_camera.py` - 堅牢なカメラ初期化
-- `high_resolution_camera_step2.py` - 高解像度対応
-
-## 🧠 AIモデル
-
-### 学習済みモデル
-- **EfficientNetB0**: 軽量で高速
-- **EfficientNetB1**: バランス型
-- **EfficientNetB2**: 高精度型
-
-### 特徴
-- **スパースモデリング**: L1/L2正則化による過学習防止
-- **データ拡張**: 回転、シフト、ズーム等の空間変換
-- **クラス重み調整**: 不均衡データセット対応
-
-## 📊 データセット
-
-### 4クラス分類
-- `good`: 正常品 (1,144枚)
-- `black_spot`: 黒点欠陥 (88枚)
-- `chipping`: 欠け欠陥 (117枚)
-- `scratch`: 傷欠陥 (112枚)
-
-## 🔧 設定
-
-### カメラ設定
-- **解像度**: フルHD (1920x1080) 対応
-- **フレームレート**: 30fps
-- **バックエンド**: DirectShow, MSMF, ANY
-
-### AI設定
-- **入力サイズ**: 224x224, 240x240, 260x260
-- **バッチサイズ**: 16
-- **エポック数**: 200
-- **学習率**: 0.001
-
-## 📈 性能
-
-### 精度
-- **アンサンブル精度**: 80.78%
-- **個別モデル精度**: 75-85%
-- **推論速度**: リアルタイム処理
-
-### 検出能力
-- **ワッシャー検出**: 複数手法による堅牢な検出
-- **欠陥分類**: 4クラス高精度分類
-- **信頼度**: 動的閾値調整
-
-## 🛠️ 技術スタック
-
-- **Python 3.8+**
-- **OpenCV**: カメラ処理・画像処理
-- **TensorFlow/Keras**: 深層学習
-- **EfficientNet**: 画像分類モデル
-- **scikit-learn**: 機械学習ユーティリティ
-
-## 📝 使用方法
-
-### 1. カメラ検査
+### 学習の実行
 ```bash
-python improved_multi_camera_selection_step5.py
-```
-- 全カメラを起動
-- グリッド表示でカメラ選択
-- リアルタイム欠陥検出
+# 6クラス学習（推奨）
+python trainers/six_class_trainer.py
 
-### 2. AI学習
+# 高品質学習
+python trainers/high_quality_trainer.py
+```
+
+### 検査の実行
 ```bash
-python clear_progress_sparse_modeling_four_class_ensemble.py
+# 6クラス検査（推奨）
+python inspectors/six_class_inspector.py --camera
+
+# 単一画像検査
+python inspectors/six_class_inspector.py image.jpg
+
+# 一括検査
+python inspectors/six_class_inspector.py --batch /path/to/images/
 ```
-- 4クラス分類学習
-- スパースモデリング適用
-- アンサンブル学習実行
 
-## 🔍 トラブルシューティング
+## 検出可能な不良品
+1. **良品 (good)** - 正常なワッシャー
+2. **黒点 (black_spot)** - 黒い点状の欠陥
+3. **欠け (chipping)** - 破損テ欠損
+4. **傷 (scratch)** - 表面の傷
+5. **歪み (distortion)** - 形状の歪み
+6. **凹み (dent)** - 表面の凹み
 
-### カメラ問題
-- **白黒表示**: カメラ設定を確認
-- **解像度低下**: フルHD設定を有効化
-- **エラー**: 複数バックエンドを試行
+## 技術仕様
+- **フレームワーク**: TensorFlow/Keras
+- **モデル**: EfficientNet (B0, B1, B2)
+- **学習方式**: アンサンブル学習
+- **データ拡張**: 高度な画像変換
+- **最適化**: AdamW, 学習率スケジューリング
 
-### AI問題
-- **低精度**: データ拡張を調整
-- **過学習**: スパースモデリングを強化
-- **メモリ不足**: バッチサイズを削減
+## ライセンス
+MIT License
 
-## 📄 ライセンス
-
-このプロジェクトはMITライセンスの下で公開されています。
-
-## 🤝 貢献
-
+## 貢献
 プルリクエストやイシューの報告を歓迎します。
 
-## 📞 サポート
-
-問題が発生した場合は、GitHubのIssuesで報告してください。
+## 更新履歴
+- v2.0: 6クラス対応、ファイル整理、UI改善
+- v1.0: 基本4クラス検出システム

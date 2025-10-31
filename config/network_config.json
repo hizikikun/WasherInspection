@@ -1,0 +1,32 @@
+{
+    "network_settings": {
+        "server_host": "192.168.1.100",
+        "server_port": 8765,
+        "auto_detect_ip": true
+    },
+    "system_modes": {
+        "desktop_pc": {
+            "mode": "server",
+            "description": "Desktop PC - Acts as WebSocket server"
+        },
+        "notebook_pc": {
+            "mode": "client", 
+            "description": "Notebook PC - Connects to desktop as client"
+        },
+        "standalone": {
+            "mode": "auto",
+            "description": "Auto-detect system and run standalone"
+        }
+    },
+    "data_sync": {
+        "inspection_results": true,
+        "performance_stats": true,
+        "system_info": true,
+        "real_time_updates": true
+    },
+    "performance": {
+        "max_inspection_history": 100,
+        "sync_interval_seconds": 1.0,
+        "connection_timeout_seconds": 10
+    }
+}

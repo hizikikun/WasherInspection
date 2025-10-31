@@ -2,6 +2,7 @@
 import time
 import json
 import os
+import sys
 import glob
 from dataclasses import dataclass, asdict
 from typing import List, Optional, Tuple, Dict, Any
@@ -160,7 +161,7 @@ def analyze_washer(outer,inner,calib,spec,gray):
         if ratio < 0.3 or ratio > 0.9:  # 内径が外径の30%未満または90%以上は除外
             return (outer,(ox,oy),float(orad),(ix,iy),float(irad),float(circ),float(conc),float(dark_mm2),False,False)
     
-    # 2. サイズチェック（小さすぎる物体を除外）
+    # 2. サイズチェック（小さムぎる物体を除外）
     if orad < 20:  # 20ピクセル未満は除外
         return (outer,(ox,oy),float(orad),(ix,iy),float(irad),float(circ),float(conc),float(dark_mm2),False,False)
     
@@ -244,7 +245,7 @@ def draw_result(frame,res,calib):
         cv2.putText(frame,t,(x+10,start_y+i*18),cv2.FONT_HERSHEY_SIMPLEX,0.5,color,1,cv2.LINE_AA)
 
 class AILearningAnalyzer:
-    """AI学習データの分析・比較クラス"""
+    """AI学習データの分析テ比較クラス"""
     
     def __init__(self):
         self.learning_datasets = {}
@@ -348,7 +349,7 @@ class AILearningAnalyzer:
         
         # データ量の推奨
         if dataset.total_samples < 1000:
-            recommendations.append("データ量を増やすことを推奨（現在: {}サンプル）".format(dataset.total_samples))
+            recommendations.append("データ量を増やムことを推奨（現在: {}サンプル）".format(dataset.total_samples))
         
         # データバランスの推奨
         balance_analysis = self._analyze_data_balance(dataset)
@@ -363,7 +364,7 @@ class AILearningAnalyzer:
         # 多様性の推奨
         defect_analysis = self._analyze_defect_distribution(dataset)
         if defect_analysis['diversity_score'] < 0.5:
-            recommendations.append("欠陥タイプの多様性を増やすことを推奨")
+            recommendations.append("欠陥タイプの多様性を増やムことを推奨")
         
         return recommendations
     
@@ -1024,7 +1025,7 @@ def run_realtime_comparison(args):
     print("   - 傷の種類（線状、点状、不規則）")
     print("   - 異物の種類（金属片、ゴミ、汚れ）")
     print("3. ワッシャーサイズの多様化")
-    print("   - 異なる外径・内径の組み合わせ")
+    print("   - 異なる外径テ内径の組み合わせ")
     print("   - 厚みの異なるワッシャー")
     print("4. 背景の多様化")
     print("   - 異なる色の背景")
@@ -1032,7 +1033,7 @@ def run_realtime_comparison(args):
     print("   - ゴミや異物が混在した場合")
     print("5. 画像品質の多様化")
     print("   - ぼやけた画像、鮮明な画像")
-    print("   - ノイズの多い画像")
+    print("   - のイズの多い画像")
     print("   - 解像度の異なる画像")
     print("\n推奨される学習データ量:")
     print("- 良品: 最低500枚（多様な条件で）")
@@ -1043,6 +1044,21 @@ def run_realtime_comparison(args):
     cv2.destroyAllWindows()
 
 def run(args):
+    # 起動時にシステムスペックを検出テ表示
+    print("\n" + "=" * 60)
+    print("ワッシャー検査システム起動")
+    print("=" * 60)
+    try:
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'scripts'))
+        from system_detector import SystemSpecDetector
+        detector = SystemSpecDetector()
+        detector.print_specs()
+        detector.print_config()
+        print("\n[注意] のートPCが検出された場合、軽量モードで動作します。")
+    except Exception as e:
+        print(f"[警告] システムスペック検出に失敗: {e}")
+        print("デフォルト設定で動作します。\n")
+    
     if args.ai_analysis:
         run_ai_analysis(args)
         return

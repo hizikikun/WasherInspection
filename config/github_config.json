@@ -1,0 +1,9 @@
+{
+  "github_token": "",
+  "github_owner": "your-username",
+  "github_repo": "washer-inspection-results",
+  "auto_send": true,
+  "send_interval_minutes": 5,
+  "include_images": true,
+  "issue_labels": ["inspection", "automated"]
+}

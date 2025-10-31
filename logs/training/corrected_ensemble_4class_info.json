@@ -1,0 +1,40 @@
+{
+  "model_name": "Corrected 4-Class Ultra-High Accuracy Ensemble Washer Inspector",
+  "timestamp": "2025-10-29 06:10:28",
+  "num_classes": 4,
+  "class_names": [
+    "good",
+    "black_spot",
+    "chipping",
+    "scratch"
+  ],
+  "expected_data_counts": {
+    "good": 1144,
+    "black_spot": 88,
+    "chipping": 117,
+    "scratch": 112
+  },
+  "num_models": 3,
+  "model_types": [
+    "EfficientNetB0",
+    "EfficientNetB1",
+    "EfficientNetB2"
+  ],
+  "spatial_augmentation_params": {
+    "rotation_range": 60,
+    "width_shift_range": 0.3,
+    "height_shift_range": 0.3,
+    "shear_range": 0.4,
+    "zoom_range": 0.4,
+    "horizontal_flip": true,
+    "vertical_flip": true,
+    "brightness_range": [
+      0.6,
+      1.4
+    ],
+    "channel_shift_range": 0.2,
+    "fill_mode": "nearest",
+    "cval": 0.0
+  },
+  "description": "Corrected ensemble of EfficientNet models for 4-class defect detection with comprehensive spatial modeling"
+}

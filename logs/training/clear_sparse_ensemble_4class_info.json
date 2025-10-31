@@ -1,0 +1,46 @@
+{
+  "model_name": "CLEAR PROGRESS SPARSE MODELING 4-Class Ultra-High Accuracy Ensemble Washer Inspector",
+  "timestamp": "2025-10-31 15:10:27",
+  "num_classes": 4,
+  "class_names": [
+    "good",
+    "black_spot",
+    "chipping",
+    "scratch"
+  ],
+  "expected_data_counts": {
+    "good": 1144,
+    "black_spot": 88,
+    "chipping": 117,
+    "scratch": 112
+  },
+  "num_models": 3,
+  "model_types": [
+    "EfficientNetB0",
+    "EfficientNetB1",
+    "EfficientNetB2"
+  ],
+  "sparse_augmentation_params": {
+    "rotation_range": 45,
+    "width_shift_range": 0.3,
+    "height_shift_range": 0.3,
+    "shear_range": 0.3,
+    "zoom_range": 0.3,
+    "horizontal_flip": true,
+    "vertical_flip": true,
+    "brightness_range": [
+      0.7,
+      1.3
+    ],
+    "channel_shift_range": 0.2,
+    "fill_mode": "nearest",
+    "cval": 0.0
+  },
+  "sparse_regularization_params": {
+    "l1_lambda": 0.001,
+    "l2_lambda": 0.0001,
+    "dropout_rate": 0.5,
+    "sparse_threshold": 0.1
+  },
+  "description": "CLEAR PROGRESS SPARSE MODELING ensemble of EfficientNet models for 4-class defect detection with L1/L2 regularization and high dropout"
+}
