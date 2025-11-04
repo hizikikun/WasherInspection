@@ -132,7 +132,10 @@ class ChangeHistoryViewer:
         fix_files_btn.pack(side=tk.LEFT, padx=(0, 5))
         
         fix_all_commits_btn = ttk.Button(fix_frame, text="全コミット修正", command=self.fix_all_garbled_commits)
-        fix_all_commits_btn.pack(side=tk.LEFT)
+        fix_all_commits_btn.pack(side=tk.LEFT, padx=(0, 5))
+        
+        reupload_all_btn = ttk.Button(fix_frame, text="全ファイル再アップロード", command=self.reupload_all_files)
+        reupload_all_btn.pack(side=tk.LEFT)
         
         # Commit list
         list_frame = ttk.LabelFrame(main_frame, text="Recent Commits", padding="5")
@@ -1557,6 +1560,239 @@ fi
                 return "Update: コミットメッセージ修正"
         except:
             return "Update: コミットメッセージ修正"
+    
+    def reupload_all_files(self):
+        """Re-upload all files to GitHub with encoding fixes"""
+        try:
+            os.chdir(self.project_path)
+            
+            # Show warning first
+            response = messagebox.askyesno("警告", 
+                "この操作は、全てのファイルを再アップロードします。\n\n"
+                "⚠️ 注意事項:\n"
+                "• 全てのファイルを新しいコミットとして追加します\n"
+                "• 文字化けしているファイルを自動修正します\n"
+                "• 既にpushされたコミットを上書きするため、force pushが必要です\n"
+                "• 他の人と共同作業している場合は、事前に相談してください\n\n"
+                "続行しますか？")
+            
+            if not response:
+                return
+            
+            # Show progress dialog
+            progress_dialog = tk.Toplevel(self.root)
+            progress_dialog.title("全ファイル再アップロード")
+            progress_dialog.geometry("700x600")
+            progress_dialog.transient(self.root)
+            progress_dialog.grab_set()
+            
+            progress_label = ttk.Label(progress_dialog, text="ファイルを処理中...")
+            progress_label.pack(pady=10)
+            
+            progress_text = scrolledtext.ScrolledText(progress_dialog, height=25, width=80)
+            progress_text.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+            
+            def log(message):
+                progress_text.insert(tk.END, message + "\n")
+                progress_text.see(tk.END)
+                progress_dialog.update()
+            
+            def process_files():
+                try:
+                    # Step 1: Pull latest from GitHub
+                    log("=" * 60)
+                    log("ステップ1: GitHubから最新のファイルを取得中...")
+                    log("")
+                    
+                    cmd = ["git", "pull", "origin", "master"]
+                    result = subprocess.run(cmd, capture_output=True, text=True, 
+                                          encoding='utf-8', errors='replace')
+                    
+                    if result.returncode == 0:
+                        log("✓ 最新ファイルを取得しました")
+                    else:
+                        log(f"⚠️ 警告: pullに失敗しましたが、続行します: {result.stderr}")
+                    
+                    log("")
+                    log("=" * 60)
+                    log("ステップ2: ファイルをスキャン・修正中...")
+                    log("")
+                    
+                    # Step 2: Get all files and fix garbled ones
+                    cmd = ["git", "ls-files"]
+                    result = subprocess.run(cmd, capture_output=True, text=True, 
+                                          encoding='utf-8', errors='replace')
+                    
+                    if result.returncode != 0:
+                        log("✗ エラー: Gitリポジトリではありません")
+                        return
+                    
+                    files = [f.strip() for f in result.stdout.strip().split('\n') if f.strip()]
+                    log(f"スキャン対象ファイル数: {len(files)}")
+                    log("")
+                    
+                    # Filter text files
+                    text_extensions = {'.py', '.md', '.txt', '.json', '.yml', '.yaml', '.js', '.ts', 
+                                     '.html', '.css', '.xml', '.ps1', '.bat', '.sh', '.cfg', '.ini'}
+                    
+                    text_files = []
+                    for file in files:
+                        if any(file.endswith(ext) for ext in text_extensions):
+                            text_files.append(file)
+                    
+                    log(f"テキストファイル数: {len(text_files)}")
+                    log("")
+                    
+                    fixed_files = []
+                    
+                    for file_path in text_files:
+                        try:
+                            if not os.path.exists(file_path):
+                                continue
+                            
+                            # Read file as binary first
+                            with open(file_path, 'rb') as f:
+                                raw_bytes = f.read()
+                            
+                            # Try to decode as UTF-8
+                            try:
+                                content = raw_bytes.decode('utf-8')
+                                is_utf8 = True
+                            except UnicodeDecodeError:
+                                # Try Shift-JIS
+                                try:
+                                    content = raw_bytes.decode('shift_jis')
+                                    is_utf8 = False
+                                    log(f"✓ {file_path}: Shift-JISとして読み込みました")
+                                except:
+                                    log(f"✗ {file_path}: エンコーディング不明（スキップ）")
+                                    continue
+                            
+                            # Check if content is garbled or needs conversion
+                            needs_fix = False
+                            
+                            if is_utf8 and self.is_garbled(content):
+                                # UTF-8として読めたが文字化けしている
+                                needs_fix = True
+                                log(f"文字化け検出: {file_path}")
+                            elif not is_utf8:
+                                # Shift-JISとしてしか読めない - UTF-8に変換
+                                needs_fix = True
+                                log(f"Shift-JIS検出: {file_path}")
+                            
+                            if needs_fix:
+                                # Try to fix by decoding as Shift-JIS and converting to UTF-8
+                                try:
+                                    decoded = raw_bytes.decode('shift_jis')
+                                    # Write back as UTF-8
+                                    with open(file_path, 'w', encoding='utf-8') as f:
+                                        f.write(decoded)
+                                    fixed_files.append(file_path)
+                                    log(f"  → 修正完了: {file_path}")
+                                except UnicodeDecodeError:
+                                    log(f"  → 修正失敗: Shift-JISとして解釈できませんでした")
+                                except Exception as e:
+                                    log(f"  → エラー: {e}")
+                            else:
+                                # Already UTF-8 and not garbled - ensure it's saved as UTF-8
+                                try:
+                                    with open(file_path, 'w', encoding='utf-8') as f:
+                                        f.write(content)
+                                except:
+                                    pass
+                        
+                        except Exception as e:
+                            log(f"✗ {file_path}: エラー - {e}")
+                    
+                    log("")
+                    log("=" * 60)
+                    log(f"修正完了ファイル: {len(fixed_files)}個")
+                    log("")
+                    
+                    # Step 3: Stage all files
+                    log("=" * 60)
+                    log("ステップ3: 全てのファイルをステージング中...")
+                    log("")
+                    
+                    cmd = ["git", "add", "-A"]
+                    result = subprocess.run(cmd, capture_output=True, text=True, 
+                                          encoding='utf-8', errors='replace')
+                    
+                    if result.returncode == 0:
+                        log("✓ 全てのファイルをステージングしました")
+                    else:
+                        log(f"✗ エラー: {result.stderr}")
+                        return
+                    
+                    # Step 4: Commit
+                    log("")
+                    log("=" * 60)
+                    log("ステップ4: コミット中...")
+                    log("")
+                    
+                    commit_message = f"Fix: 全ファイルをUTF-8エンコーディングに統一 ({len(fixed_files)}ファイル修正)"
+                    cmd = ["git", "commit", "-m", commit_message]
+                    result = subprocess.run(cmd, capture_output=True, text=True, 
+                                          encoding='utf-8', errors='replace')
+                    
+                    if result.returncode == 0:
+                        log("✓ コミット成功")
+                        log("")
+                        
+                        # Step 5: Push
+                        log("=" * 60)
+                        log("ステップ5: GitHubにプッシュ中...")
+                        log("")
+                        
+                        # Ask user if they want to force push
+                        progress_dialog.update()
+                        response = messagebox.askyesno("確認", 
+                            f"{len(fixed_files)}個のファイルを修正しました。\n\n"
+                            "GitHubにプッシュしますか？\n\n"
+                            "⚠️ 注意: force pushが必要な場合があります。")
+                        
+                        if response:
+                            cmd = ["git", "push", "origin", "master", "--force"]
+                            result = subprocess.run(cmd, capture_output=True, text=True, 
+                                                  encoding='utf-8', errors='replace')
+                            
+                            if result.returncode == 0:
+                                log("✓ プッシュ成功")
+                                log("")
+                                log("=" * 60)
+                                log("完了！")
+                                log("全てのファイルを再アップロードし、文字化けを修正しました。")
+                                messagebox.showinfo("成功", 
+                                    f"{len(fixed_files)}個のファイルを修正してGitHubに再アップロードしました。")
+                            else:
+                                log(f"✗ プッシュ失敗: {result.stderr}")
+                                messagebox.showerror("エラー", f"プッシュに失敗しました:\n{result.stderr}")
+                        else:
+                            log("")
+                            log("プッシュはキャンセルされました。")
+                            log("後で手動でプッシュしてください:")
+                            log("  git push origin master --force")
+                    else:
+                        log(f"✗ コミット失敗: {result.stderr}")
+                        messagebox.showerror("エラー", f"コミットに失敗しました:\n{result.stderr}")
+                    
+                    # Add close button
+                    close_btn = ttk.Button(progress_dialog, text="閉じる", 
+                                          command=progress_dialog.destroy)
+                    close_btn.pack(pady=10)
+                    
+                except Exception as e:
+                    log(f"エラー: {e}")
+                    import traceback
+                    log(traceback.format_exc())
+                    messagebox.showerror("Error", f"エラーが発生しました: {e}")
+                    progress_dialog.destroy()
+            
+            # Run in background thread
+            threading.Thread(target=process_files, daemon=True).start()
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"エラーが発生しました: {e}")
 
 def main():
     root = tk.Tk()

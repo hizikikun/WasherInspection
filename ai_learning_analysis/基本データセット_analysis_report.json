@@ -1,38 +1,38 @@
-{
-  "dataset_name": "基本データセット",
-  "analysis_timestamp": "2025-10-22 23:44:19",
-  "basic_statistics": {
-    "total_samples": 770,
-    "avg_quality": 0.8442464722962375,
-    "quality_std": 0.1121411925882178,
-    "defect_area_mean": 1.9216613345122795,
-    "defect_area_std": 1.8590764513375795,
-    "circularity_mean": 0.9263095833109144,
-    "concentricity_mean": 0.019766101880155474
-  },
-  "defect_distribution": {
-    "distribution": {
-      "normal": 0.5194805194805194,
-      "black_spot": 0.19480519480519481,
-      "short_circuit": 0.12987012987012986,
-      "foreign_matter": 0.15584415584415584
-    },
-    "diversity_score": 1.0,
-    "most_common_defect": "normal",
-    "least_common_defect": "short_circuit"
-  },
-  "quality_metrics": {
-    "quality_grade": "B",
-    "consistency": 0.8878588074117822,
-    "high_quality_ratio": 0.6831168831168831
-  },
-  "data_balance": {
-    "balance_score": 0.25,
-    "imbalance_ratio": 2.0779220779220777,
-    "is_balanced": false
-  },
-  "recommendations": [
-    "データ量を増やすことを推奨（現在: 770サンプル）",
-    "データバランスの改善が必要（不均衡比: 2.08）"
-  ]
+{
+  "dataset_name": "基本データセット",
+  "analysis_timestamp": "2025-10-22 23:44:19",
+  "basic_statistics": {
+    "total_samples": 770,
+    "avg_quality": 0.8442464722962375,
+    "quality_std": 0.1121411925882178,
+    "defect_area_mean": 1.9216613345122795,
+    "defect_area_std": 1.8590764513375795,
+    "circularity_mean": 0.9263095833109144,
+    "concentricity_mean": 0.019766101880155474
+  },
+  "defect_distribution": {
+    "distribution": {
+      "normal": 0.5194805194805194,
+      "black_spot": 0.19480519480519481,
+      "short_circuit": 0.12987012987012986,
+      "foreign_matter": 0.15584415584415584
+    },
+    "diversity_score": 1.0,
+    "most_common_defect": "normal",
+    "least_common_defect": "short_circuit"
+  },
+  "quality_metrics": {
+    "quality_grade": "B",
+    "consistency": 0.8878588074117822,
+    "high_quality_ratio": 0.6831168831168831
+  },
+  "data_balance": {
+    "balance_score": 0.25,
+    "imbalance_ratio": 2.0779220779220777,
+    "is_balanced": false
+  },
+  "recommendations": [
+    "データ量を増やすことを推奨（現在: 770サンプル）",
+    "データバランスの改善が必要（不均衡比: 2.08）"
+  ]
 }
