@@ -1886,6 +1886,414 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
 
     
 
+    def fix_commit_messages(self):
+
+        """Fix incorrect commit messages that were set by previous garbled text fix features"""
+
+        try:
+
+            os.chdir(self.project_path)
+
+            
+
+            # File descriptions mapping
+
+            file_descriptions = {
+
+                # Folders
+
+                '.github/workflows': 'GitHub Actions ワークフロー設定',
+
+                'ai_learning_analysis': 'AI学習データ分析モジュール',
+
+                'backup': 'バックアップファイル',
+
+                'batch_files': 'バッチファイル集',
+
+                'docs': 'ドキュメント',
+
+                'github_tools': 'GitHub連携ツール',
+
+                'old': '旧ファイル',
+
+                'resin_washer_model': '樹脂ワッシャー検査モデル',
+
+                'scripts': 'スクリプト集',
+
+                
+
+                # Main Files
+
+                'main.py': 'メイン検査システム',
+
+                'camera_inspection.py': 'カメラ検査システム',
+
+                'scripts/train_4class_sparse_ensemble.py': '4クラス分類学習スクリプト',
+
+                'auto-commit.ps1': '自動コミットスクリプト',
+
+                
+
+                # Documentation files
+
+                '.gitignore': 'Git除外設定ファイル',
+
+                '.test_encoding_check.txt': 'エンコーディング確認テストファイル',
+
+                'AUTO_COMMIT_README.md': '自動コミット機能の説明',
+
+                'CHANGE_HISTORY_VIEWER_README.md': '変更履歴ビューアーの説明',
+
+                'COMMIT_FIX_GUIDE.md': 'コミット修正ガイド',
+
+                'CURSOR_GITHUB_GUIDE.md': 'CursorとGitHub連携ガイド',
+
+                'GITHUB_AUTO_COMMIT_GUIDE.md': 'GitHub自動コミットガイド',
+
+                'NETWORK_SETUP_GUIDE.md': 'ネットワーク設定ガイド',
+
+                'README.md': 'プロジェクト説明書',
+
+                'change_history_viewer.py': '変更履歴ビューアーアプリ',
+
+                'test_auto_commit.ps1': '自動コミットテストスクリプト',
+
+                'start_history_viewer.bat': '履歴ビューアー起動バッチ',
+
+            }
+
+            
+
+            # Use common progress dialog
+
+            progress_dialog, log, close_btn = self.create_progress_dialog("コミットメッセージ修正", width=800, height=700)
+
+            
+
+            def process_files():
+
+                try:
+
+                    log("=" * 60)
+
+                    log("不適切なコミットメッセージを修正中...")
+
+                    log("")
+
+                    
+
+                    # Get all tracked files
+
+                    cmd = ["git", "ls-files"]
+
+                    result = subprocess.run(cmd, capture_output=True, text=True, 
+
+                                          encoding='utf-8', errors='replace')
+
+                    
+
+                    if result.returncode != 0:
+
+                        log("✗ エラー: Gitリポジトリではありません")
+
+                        return
+
+                    
+
+                    files = [f.strip() for f in result.stdout.strip().split('\n') if f.strip()]
+
+                    
+
+                    # Get directories too
+
+                    directories = set()
+
+                    for file in files:
+
+                        dir_path = os.path.dirname(file) if os.path.dirname(file) else '.'
+
+                        if dir_path != '.':
+
+                            parts = dir_path.split(os.sep)
+
+                            for i in range(len(parts)):
+
+                                directories.add(os.sep.join(parts[:i+1]) if i > 0 else parts[0])
+
+                    
+
+                    # Combine files and directories
+
+                    all_items = list(set(files) | directories)
+
+                    all_items.sort()
+
+                    
+
+                    log(f"処理対象: {len(all_items)}個のファイル/フォルダ")
+
+                    log("")
+
+                    
+
+                    # Patterns to identify incorrect messages
+
+                    incorrect_patterns = [
+
+                        "Fix: 全ファイルをUTF-8エンコーディングに統一",
+
+                        "Fix: 全ファイルをUTF-8",
+
+                        "UTF-8エンコーディングに統一",
+
+                    ]
+
+                    
+
+                    fixed_count = 0
+
+                    skipped_count = 0
+
+                    
+
+                    for item_path in all_items:
+
+                        try:
+
+                            # Get description
+
+                            description = file_descriptions.get(item_path, None)
+
+                            
+
+                            # If no description, generate one
+
+                            if not description:
+
+                                if os.path.isdir(item_path) if os.path.exists(item_path) else item_path.endswith('/'):
+
+                                    dir_name = os.path.basename(item_path) if item_path != '.' else 'プロジェクト'
+
+                                    description = f'{dir_name}フォルダ'
+
+                                else:
+
+                                    file_name = os.path.basename(item_path)
+
+                                    name_without_ext = os.path.splitext(file_name)[0]
+
+                                    description = f'{name_without_ext}ファイル'
+
+                            
+
+                            # Get current commit message for this item
+
+                            cmd = ["git", "log", "-1", "--format=%s", "--", item_path]
+
+                            result = subprocess.run(cmd, capture_output=True, text=True, 
+
+                                                  encoding='utf-8', errors='replace')
+
+                            
+
+                            if result.returncode != 0:
+
+                                continue
+
+                            
+
+                            current_message = result.stdout.strip()
+
+                            
+
+                            # Check if message is incorrect
+
+                            is_incorrect = any(pattern in current_message for pattern in incorrect_patterns)
+
+                            
+
+                            # Also check if message doesn't match description
+
+                            if not is_incorrect and current_message != description:
+
+                                # Skip if message is already correct or different but not incorrect
+
+                                skipped_count += 1
+
+                                continue
+
+                            
+
+                            if is_incorrect or current_message != description:
+
+                                log(f"修正中: {item_path}")
+
+                                log(f"  現在: {current_message[:60]}...")
+
+                                log(f"  新しい: {description}")
+
+                                
+
+                                # Stage the item
+
+                                cmd = ["git", "add", item_path]
+
+                                result = subprocess.run(cmd, capture_output=True, text=True, 
+
+                                                      encoding='utf-8', errors='replace')
+
+                                
+
+                                if result.returncode != 0:
+
+                                    log(f"  ✗ ステージング失敗")
+
+                                    continue
+
+                                
+
+                                # Create commit with description (allow empty if no changes)
+
+                                env = os.environ.copy()
+
+                                env['LANG'] = 'en_US.UTF-8'
+
+                                env['LC_ALL'] = 'en_US.UTF-8'
+
+                                
+
+                                cmd = ["git", "-c", "i18n.commitEncoding=utf-8", "commit", 
+
+                                       "--allow-empty", "-m", description]
+
+                                result = subprocess.run(cmd, capture_output=True, text=True, 
+
+                                                      encoding='utf-8', errors='replace', env=env)
+
+                                
+
+                                if result.returncode == 0:
+
+                                    log(f"  ✓ 修正成功")
+
+                                    fixed_count += 1
+
+                                else:
+
+                                    log(f"  ✗ 修正失敗: {result.stderr[:50]}")
+
+                                
+
+                                log("")
+
+                        except Exception as e:
+
+                            log(f"✗ {item_path}: エラー - {e}")
+
+                    
+
+                    log("")
+
+                    log("=" * 60)
+
+                    log(f"処理完了")
+
+                    log(f"修正成功: {fixed_count}個")
+
+                    log(f"スキップ: {skipped_count}個")
+
+                    log("")
+
+                    
+
+                    if fixed_count > 0:
+
+                        log("⚠️ 次のステップ:")
+
+                        log("GitHubにプッシュしますか？")
+
+                        log("")
+
+                        
+
+                        # Ask user if they want to push
+
+                        progress_dialog.update()
+
+                        
+
+                        response = messagebox.askyesno("確認", 
+
+                            f"{fixed_count}個のコミットメッセージを修正しました。\n\n"
+
+                            "GitHubにプッシュしますか？\n\n"
+
+                            "⚠️ 注意: force pushが必要になる場合があります。")
+
+                        
+
+                        if response:
+
+                            log("")
+
+                            log("プッシュ中...")
+
+                            
+
+                            env = os.environ.copy()
+
+                            env['LANG'] = 'en_US.UTF-8'
+
+                            env['LC_ALL'] = 'en_US.UTF-8'
+
+                            
+
+                            success, error = self.git_push("master", force=True, log_func=log)
+
+                            
+
+                            if success:
+
+                                messagebox.showinfo("成功", 
+
+                                    f"{fixed_count}個のコミットメッセージを修正してプッシュしました。")
+
+                            else:
+
+                                messagebox.showerror("エラー", f"プッシュに失敗しました:\n{error}")
+
+                    else:
+
+                        log("修正するコミットはありませんでした。")
+
+                        messagebox.showinfo("情報", "修正するコミットはありませんでした。")
+
+                    
+
+                except Exception as e:
+
+                    log(f"エラー: {e}")
+
+                    import traceback
+
+                    log(traceback.format_exc())
+
+                    messagebox.showerror("Error", f"エラーが発生しました: {e}")
+
+            
+
+            # Run in background thread
+
+            threading.Thread(target=process_files, daemon=True).start()
+
+            
+
+        except Exception as e:
+
+            messagebox.showerror("Error", f"エラーが発生しました: {e}")
+
+    
+
 def main():
 
     root = tk.Tk()
