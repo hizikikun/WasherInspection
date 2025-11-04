@@ -1,6 +1,6 @@
-テストコミット: UTF-8エンコーディング確認
-Test Commit: UTF-8 Encoding Verification
-作成日時: 2025-11-05 04:05:08
-
-このファイルは文字化けしないことを確認するためのテストファイルです。
-This file is for testing UTF-8 encoding to ensure no garbled characters.
+テストコミット: UTF-8エンコーディング確認
+Test Commit: UTF-8 Encoding Verification
+作成日時: 2025-11-05 04:05:08
+
+このファイルは文字化けしないことを確認するためのテストファイルです。
+This file is for testing UTF-8 encoding to ensure no garbled characters.

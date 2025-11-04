@@ -1,43 +1,43 @@
-# Git エンコーディング修正ガイド
-
-## 問題
-GitHubでコミットメッセージが文字化けしている
-
-## 解決方法
-
-### 1. Gitのエンコーディング設定を修正
-
-以下のコマンドを実行してください：
-
-```powershell
-# GitのコミットメッセージエンコーディングをUTF-8に設定
-git config --global i18n.commitEncoding utf-8
-git config --global i18n.logOutputEncoding utf-8
-
-# ロケール設定
-git config --global core.quotepath false
-```
-
-### 2. PowerShellのエンコーディング設定
-
-```powershell
-# PowerShellの出力エンコーディングをUTF-8に設定
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$OutputEncoding = [System.Text.Encoding]::UTF8
-chcp 65001
-```
-
-### 3. 今後のコミットメッセージ
-
-設定後、新しいコミットメッセージは正しく表示されるようになります。
-
-### 4. 既存のコミットメッセージを修正する場合
-
-既存のコミットメッセージを修正するには、`git rebase -i` を使用する必要がありますが、
-すでにpushされている場合は注意が必要です。
-
-## 注意事項
-
-- 既にpushされているコミットを修正する場合は、force pushが必要になる場合があります
-- 他の人と共同作業している場合は、事前に相談してください
-
+# Git エンコーディング修正ガイド
+
+## 問題
+GitHubでコミットメッセージが文字化けしている
+
+## 解決方法
+
+### 1. Gitのエンコーディング設定を修正
+
+以下のコマンドを実行してください：
+
+```powershell
+# GitのコミットメッセージエンコーディングをUTF-8に設定
+git config --global i18n.commitEncoding utf-8
+git config --global i18n.logOutputEncoding utf-8
+
+# ロケール設定
+git config --global core.quotepath false
+```
+
+### 2. PowerShellのエンコーディング設定
+
+```powershell
+# PowerShellの出力エンコーディングをUTF-8に設定
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+chcp 65001
+```
+
+### 3. 今後のコミットメッセージ
+
+設定後、新しいコミットメッセージは正しく表示されるようになります。
+
+### 4. 既存のコミットメッセージを修正する場合
+
+既存のコミットメッセージを修正するには、`git rebase -i` を使用する必要がありますが、
+すでにpushされている場合は注意が必要です。
+
+## 注意事項
+
+- 既にpushされているコミットを修正する場合は、force pushが必要になる場合があります
+- 他の人と共同作業している場合は、事前に相談してください
+
