@@ -690,6 +690,217 @@ class ChangeHistoryViewer:
         except Exception as e:
             return False, f"Error: {e}"
     
+    # ===== 共通ヘルパー関数 =====
+    
+    def create_progress_dialog(self, title, width=700, height=600):
+        """共通プログレスダイアログを作成"""
+        progress_dialog = tk.Toplevel(self.root)
+        progress_dialog.title(title)
+        progress_dialog.geometry(f"{width}x{height}")
+        progress_dialog.transient(self.root)
+        progress_dialog.grab_set()
+        
+        progress_label = ttk.Label(progress_dialog, text="処理中...")
+        progress_label.pack(pady=10)
+        
+        progress_text = scrolledtext.ScrolledText(progress_dialog, height=25, width=80)
+        progress_text.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+        
+        def log(message):
+            progress_text.insert(tk.END, message + "\n")
+            progress_text.see(tk.END)
+            progress_dialog.update()
+        
+        close_btn = ttk.Button(progress_dialog, text="閉じる", 
+                              command=progress_dialog.destroy)
+        close_btn.pack(pady=10)
+        
+        return progress_dialog, log, close_btn
+    
+    def git_add_files(self, files=None, log_func=None):
+        """Git add操作の共通処理"""
+        try:
+            os.chdir(self.project_path)
+            if files is None:
+                cmd = ["git", "add", "-A"]
+            else:
+                cmd = ["git", "add"] + (files if isinstance(files, list) else [files])
+            
+            result = subprocess.run(cmd, capture_output=True, text=True, 
+                                  encoding='utf-8', errors='replace')
+            
+            if result.returncode == 0:
+                if log_func:
+                    if files is None:
+                        log_func("✓ 全てのファイルをステージングしました")
+                    else:
+                        file_list = files if isinstance(files, list) else [files]
+                        for f in file_list:
+                            log_func(f"✓ ステージング: {f}")
+                return True, None
+            else:
+                error_msg = result.stderr.strip()
+                if log_func:
+                    log_func(f"✗ git add失敗: {error_msg}")
+                return False, error_msg
+        except Exception as e:
+            error_msg = str(e)
+            if log_func:
+                log_func(f"✗ エラー: {error_msg}")
+            return False, error_msg
+    
+    def git_commit(self, message, allow_empty=False, log_func=None):
+        """Git commit操作の共通処理"""
+        try:
+            os.chdir(self.project_path)
+            cmd = ["git", "commit", "-m", message]
+            if allow_empty:
+                cmd.append("--allow-empty")
+            
+            result = subprocess.run(cmd, capture_output=True, text=True, 
+                                  encoding='utf-8', errors='replace')
+            
+            if result.returncode == 0:
+                if log_func:
+                    log_func(f"✓ コミット成功: {message}")
+                return True, None
+            else:
+                error_msg = result.stderr.strip()
+                if log_func:
+                    log_func(f"✗ コミット失敗: {error_msg}")
+                return False, error_msg
+        except Exception as e:
+            error_msg = str(e)
+            if log_func:
+                log_func(f"✗ エラー: {error_msg}")
+            return False, error_msg
+    
+    def git_push(self, branch="master", force=False, log_func=None):
+        """Git push操作の共通処理"""
+        try:
+            os.chdir(self.project_path)
+            cmd = ["git", "push", "origin", branch]
+            if force:
+                cmd.append("--force")
+            
+            result = subprocess.run(cmd, capture_output=True, text=True, 
+                                  encoding='utf-8', errors='replace')
+            
+            if result.returncode == 0:
+                if log_func:
+                    log_func("✓ プッシュ成功")
+                return True, None
+            else:
+                # Try 'main' branch if 'master' fails
+                if branch == "master":
+                    cmd = ["git", "push", "origin", "main"]
+                    if force:
+                        cmd.append("--force")
+                    result = subprocess.run(cmd, capture_output=True, text=True, 
+                                          encoding='utf-8', errors='replace')
+                    if result.returncode == 0:
+                        if log_func:
+                            log_func("✓ プッシュ成功 (mainブランチ)")
+                        return True, None
+                
+                error_msg = result.stderr.strip()
+                if log_func:
+                    log_func(f"✗ プッシュ失敗: {error_msg}")
+                return False, error_msg
+        except Exception as e:
+            error_msg = str(e)
+            if log_func:
+                log_func(f"✗ エラー: {error_msg}")
+            return False, error_msg
+    
+    def fix_file_encoding(self, file_path, log_func=None):
+        """ファイルのエンコーディングを修正（共通処理）"""
+        try:
+            if not os.path.exists(file_path):
+                return False, "ファイルが存在しません"
+            
+            # Read file as binary first
+            with open(file_path, 'rb') as f:
+                raw_bytes = f.read()
+            
+            # Try to decode as UTF-8
+            try:
+                content = raw_bytes.decode('utf-8')
+                is_utf8 = True
+            except UnicodeDecodeError:
+                # Try Shift-JIS
+                try:
+                    content = raw_bytes.decode('shift_jis')
+                    is_utf8 = False
+                    if log_func:
+                        log_func(f"✓ {file_path}: Shift-JISとして読み込みました")
+                except:
+                    if log_func:
+                        log_func(f"✗ {file_path}: エンコーディング不明（スキップ）")
+                    return False, "エンコーディング不明"
+            
+            # Check if content is garbled or needs conversion
+            needs_fix = False
+            
+            if is_utf8 and self.is_garbled(content):
+                # UTF-8として読めたが文字化けしている
+                needs_fix = True
+                if log_func:
+                    log_func(f"文字化け検出: {file_path}")
+            elif not is_utf8:
+                # Shift-JISとしてしか読めない - UTF-8に変換
+                needs_fix = True
+                if log_func:
+                    log_func(f"Shift-JIS検出: {file_path}")
+            
+            if needs_fix:
+                # Try to fix by decoding as Shift-JIS and converting to UTF-8
+                try:
+                    decoded = raw_bytes.decode('shift_jis')
+                    # Write back as UTF-8
+                    with open(file_path, 'w', encoding='utf-8') as f:
+                        f.write(decoded)
+                    if log_func:
+                        log_func(f"  → 修正完了: {file_path}")
+                    return True, "修正完了"
+                except UnicodeDecodeError:
+                    if log_func:
+                        log_func(f"  → 修正失敗: Shift-JISとして解釈できませんでした")
+                    return False, "Shift-JISとして解釈できません"
+                except Exception as e:
+                    if log_func:
+                        log_func(f"  → エラー: {e}")
+                    return False, str(e)
+            else:
+                # Already UTF-8 and not garbled - ensure it's saved as UTF-8
+                try:
+                    with open(file_path, 'w', encoding='utf-8') as f:
+                        f.write(content)
+                    return True, "既にUTF-8"
+                except:
+                    pass
+            
+            return False, "修正不要"
+        except Exception as e:
+            if log_func:
+                log_func(f"✗ {file_path}: エラー - {e}")
+            return False, str(e)
+    
+    def get_text_files(self, files, log_func=None):
+        """テキストファイルをフィルタリング（共通処理）"""
+        text_extensions = {'.py', '.md', '.txt', '.json', '.yml', '.yaml', '.js', '.ts', 
+                         '.html', '.css', '.xml', '.ps1', '.bat', '.sh', '.cfg', '.ini'}
+        
+        text_files = []
+        for file in files:
+            if any(file.endswith(ext) for ext in text_extensions):
+                text_files.append(file)
+        
+        if log_func:
+            log_func(f"テキストファイル数: {len(text_files)}")
+        
+        return text_files
+    
     def manual_commit_push(self):
         """Manually trigger commit and push"""
         success, message = self.commit_and_push()
@@ -1016,23 +1227,8 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
         try:
             os.chdir(self.project_path)
             
-            # Show progress dialog
-            progress_dialog = tk.Toplevel(self.root)
-            progress_dialog.title("ファイル文字化け修正")
-            progress_dialog.geometry("600x500")
-            progress_dialog.transient(self.root)
-            progress_dialog.grab_set()
-            
-            progress_label = ttk.Label(progress_dialog, text="ファイルをスキャン中...")
-            progress_label.pack(pady=10)
-            
-            progress_text = scrolledtext.ScrolledText(progress_dialog, height=20, width=70)
-            progress_text.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
-            
-            def log(message):
-                progress_text.insert(tk.END, message + "\n")
-                progress_text.see(tk.END)
-                progress_dialog.update()
+            # Use common progress dialog
+            progress_dialog, log, close_btn = self.create_progress_dialog("ファイル文字化け修正", width=600, height=500)
             
             def scan_and_fix():
                 try:
@@ -1047,78 +1243,23 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
                     log(f"スキャン対象ファイル数: {len(files)}")
                     log("")
                     
-                    # Filter text files (exclude binary files)
-                    text_extensions = {'.py', '.md', '.txt', '.json', '.yml', '.yaml', '.js', '.ts', 
-                                     '.html', '.css', '.xml', '.ps1', '.bat', '.sh', '.cfg', '.ini'}
-                    
-                    text_files = []
-                    for file in files:
-                        if any(file.endswith(ext) for ext in text_extensions):
-                            text_files.append(file)
-                    
-                    log(f"テキストファイル数: {len(text_files)}")
+                    # Filter text files
+                    text_files = self.get_text_files(files, log_func=log)
                     log("")
                     
                     garbled_files = []
                     fixed_files = []
                     
                     for file_path in text_files:
-                        try:
-                            # Skip if file doesn't exist
-                            if not os.path.exists(file_path):
-                                continue
-                            
-                            # Read file as binary first
-                            with open(file_path, 'rb') as f:
-                                raw_bytes = f.read()
-                            
-                            # Try to decode as UTF-8
-                            try:
-                                content = raw_bytes.decode('utf-8')
-                                is_utf8 = True
-                            except UnicodeDecodeError:
-                                # Try Shift-JIS
-                                try:
-                                    content = raw_bytes.decode('shift_jis')
-                                    is_utf8 = False
-                                    log(f"✓ {file_path}: Shift-JISとして読み込みました")
-                                except:
-                                    log(f"✗ {file_path}: エンコーディング不明（スキップ）")
-                                    continue
-                            
-                            # Check if content is garbled (UTF-8として読めたが文字化けしている)
-                            if is_utf8 and self.is_garbled(content):
-                                log(f"文字化け検出: {file_path}")
-                                garbled_files.append(file_path)
-                                
-                                # Try to fix by decoding as Shift-JIS and converting to UTF-8
-                                try:
-                                    # We already have raw_bytes from above
-                                    # Try to decode as Shift-JIS
-                                    try:
-                                        decoded = raw_bytes.decode('shift_jis')
-                                        # Write back as UTF-8
-                                        with open(file_path, 'w', encoding='utf-8') as f:
-                                            f.write(decoded)
-                                        fixed_files.append(file_path)
-                                        log(f"  → 修正完了: {file_path}")
-                                    except UnicodeDecodeError:
-                                        log(f"  → 修正失敗: Shift-JISとして解釈できませんでした")
-                                except Exception as e:
-                                    log(f"  → エラー: {e}")
-                            elif not is_utf8:
-                                # File is already in Shift-JIS, convert to UTF-8
-                                try:
-                                    # content is already decoded from Shift-JIS
-                                    with open(file_path, 'w', encoding='utf-8') as f:
-                                        f.write(content)
-                                    fixed_files.append(file_path)
-                                    log(f"  → UTF-8に変換: {file_path}")
-                                except Exception as e:
-                                    log(f"  → エラー: {e}")
+                        # Skip if file doesn't exist
+                        if not os.path.exists(file_path):
+                            continue
                         
-                        except Exception as e:
-                            log(f"✗ {file_path}: エラー - {e}")
+                        # Use common encoding fix function
+                        success, status = self.fix_file_encoding(file_path, log_func=log)
+                        if success and status == "修正完了":
+                            garbled_files.append(file_path)
+                            fixed_files.append(file_path)
                     
                     log("")
                     log("=" * 60)
@@ -1142,49 +1283,29 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
                             log("コミット中...")
                             
                             # Stage all fixed files
-                            for file_path in fixed_files:
-                                cmd = ["git", "add", file_path]
-                                result = subprocess.run(cmd, capture_output=True, text=True, 
-                                                      encoding='utf-8', errors='replace')
-                                if result.returncode != 0:
-                                    log(f"✗ git add失敗: {file_path}")
-                                else:
-                                    log(f"✓ ステージング: {file_path}")
+                            success, error = self.git_add_files(fixed_files, log_func=log)
                             
-                            # Commit
-                            commit_message = f"Fix: 文字化けファイルをUTF-8に変換 ({len(fixed_files)}ファイル)"
-                            cmd = ["git", "commit", "-m", commit_message]
-                            result = subprocess.run(cmd, capture_output=True, text=True, 
-                                                  encoding='utf-8', errors='replace')
-                            
-                            if result.returncode == 0:
-                                log("✓ コミット成功")
+                            if success:
+                                # Commit
+                                commit_message = f"Fix: 文字化けファイルをUTF-8に変換 ({len(fixed_files)}ファイル)"
+                                success, error = self.git_commit(commit_message, log_func=log)
                                 
-                                # Push
-                                log("")
-                                log("プッシュ中...")
-                                cmd = ["git", "push", "origin", "master"]
-                                result = subprocess.run(cmd, capture_output=True, text=True, 
-                                                      encoding='utf-8', errors='replace')
-                                
-                                if result.returncode == 0:
-                                    log("✓ プッシュ成功")
-                                    messagebox.showinfo("成功", 
-                                        f"{len(fixed_files)}個のファイルを修正してコミット・プッシュしました。")
+                                if success:
+                                    # Push
+                                    log("")
+                                    log("プッシュ中...")
+                                    success, error = self.git_push("master", force=False, log_func=log)
+                                    
+                                    if success:
+                                        messagebox.showinfo("成功", 
+                                            f"{len(fixed_files)}個のファイルを修正してコミット・プッシュしました。")
+                                    else:
+                                        messagebox.showerror("エラー", f"プッシュに失敗しました:\n{error}")
                                 else:
-                                    log(f"✗ プッシュ失敗: {result.stderr}")
-                                    messagebox.showerror("エラー", f"プッシュに失敗しました:\n{result.stderr}")
-                            else:
-                                log(f"✗ コミット失敗: {result.stderr}")
-                                messagebox.showerror("エラー", f"コミットに失敗しました:\n{result.stderr}")
+                                    messagebox.showerror("エラー", f"コミットに失敗しました:\n{error}")
                     else:
                         log("修正が必要なファイルは見つかりませんでした。")
                         messagebox.showinfo("完了", "文字化けファイルは見つかりませんでした。")
-                    
-                    # Add close button
-                    close_btn = ttk.Button(progress_dialog, text="閉じる", 
-                                          command=progress_dialog.destroy)
-                    close_btn.pack(pady=10)
                     
                 except Exception as e:
                     log(f"エラー: {e}")
@@ -1635,77 +1756,20 @@ fi
                     log("")
                     
                     # Filter text files
-                    text_extensions = {'.py', '.md', '.txt', '.json', '.yml', '.yaml', '.js', '.ts', 
-                                     '.html', '.css', '.xml', '.ps1', '.bat', '.sh', '.cfg', '.ini'}
-                    
-                    text_files = []
-                    for file in files:
-                        if any(file.endswith(ext) for ext in text_extensions):
-                            text_files.append(file)
-                    
-                    log(f"テキストファイル数: {len(text_files)}")
+                    text_files = self.get_text_files(files, log_func=log)
                     log("")
                     
                     fixed_files = []
                     
                     for file_path in text_files:
-                        try:
-                            if not os.path.exists(file_path):
-                                continue
-                            
-                            # Read file as binary first
-                            with open(file_path, 'rb') as f:
-                                raw_bytes = f.read()
-                            
-                            # Try to decode as UTF-8
-                            try:
-                                content = raw_bytes.decode('utf-8')
-                                is_utf8 = True
-                            except UnicodeDecodeError:
-                                # Try Shift-JIS
-                                try:
-                                    content = raw_bytes.decode('shift_jis')
-                                    is_utf8 = False
-                                    log(f"✓ {file_path}: Shift-JISとして読み込みました")
-                                except:
-                                    log(f"✗ {file_path}: エンコーディング不明（スキップ）")
-                                    continue
-                            
-                            # Check if content is garbled or needs conversion
-                            needs_fix = False
-                            
-                            if is_utf8 and self.is_garbled(content):
-                                # UTF-8として読めたが文字化けしている
-                                needs_fix = True
-                                log(f"文字化け検出: {file_path}")
-                            elif not is_utf8:
-                                # Shift-JISとしてしか読めない - UTF-8に変換
-                                needs_fix = True
-                                log(f"Shift-JIS検出: {file_path}")
-                            
-                            if needs_fix:
-                                # Try to fix by decoding as Shift-JIS and converting to UTF-8
-                                try:
-                                    decoded = raw_bytes.decode('shift_jis')
-                                    # Write back as UTF-8
-                                    with open(file_path, 'w', encoding='utf-8') as f:
-                                        f.write(decoded)
-                                    fixed_files.append(file_path)
-                                    log(f"  → 修正完了: {file_path}")
-                                except UnicodeDecodeError:
-                                    log(f"  → 修正失敗: Shift-JISとして解釈できませんでした")
-                                except Exception as e:
-                                    log(f"  → エラー: {e}")
-                            else:
-                                # Already UTF-8 and not garbled - ensure it's saved as UTF-8
-                                try:
-                                    with open(file_path, 'w', encoding='utf-8') as f:
-                                        f.write(content)
-                                except:
-                                    pass
+                        if not os.path.exists(file_path):
+                            continue
                         
-                        except Exception as e:
-                            log(f"✗ {file_path}: エラー - {e}")
+                        # Use common encoding fix function
+                        success, status = self.fix_file_encoding(file_path, log_func=log)
+                        if success and (status == "修正完了" or status == "既にUTF-8"):
+                            if status == "修正完了":
+                                fixed_files.append(file_path)
                     
                     log("")
                     log("=" * 60)
@@ -1717,14 +1781,9 @@ fi
                     log("ステップ3: 全てのファイルをステージング中...")
                     log("")
                     
-                    cmd = ["git", "add", "-A"]
-                    result = subprocess.run(cmd, capture_output=True, text=True, 
-                                          encoding='utf-8', errors='replace')
-                    
-                    if result.returncode == 0:
-                        log("✓ 全てのファイルをステージングしました")
-                    else:
-                        log(f"✗ エラー: {result.stderr}")
+                    success, error = self.git_add_files(None, log_func=log)
+                    if not success:
+                        log(f"✗ エラー: {error}")
                         return
                     
                     # Step 4: Commit
@@ -1734,15 +1793,11 @@ fi
                     log("")
                     
                     commit_message = f"Fix: 全ファイルをUTF-8エンコーディングに統一 ({len(fixed_files)}ファイル修正)"
-                    cmd = ["git", "commit", "-m", commit_message]
-                    result = subprocess.run(cmd, capture_output=True, text=True, 
-                                          encoding='utf-8', errors='replace')
+                    success, error = self.git_commit(commit_message, log_func=log)
                     
-                    if result.returncode == 0:
-                        log("✓ コミット成功")
-                        log("")
-                        
+                    if success:
                         # Step 5: Push
+                        log("")
                         log("=" * 60)
                         log("ステップ5: GitHubにプッシュ中...")
                         log("")
@@ -1755,12 +1810,9 @@ fi
                             "⚠️ 注意: force pushが必要な場合があります。")
                         
                         if response:
-                            cmd = ["git", "push", "origin", "master", "--force"]
-                            result = subprocess.run(cmd, capture_output=True, text=True, 
-                                                  encoding='utf-8', errors='replace')
+                            success, error = self.git_push("master", force=True, log_func=log)
                             
-                            if result.returncode == 0:
-                                log("✓ プッシュ成功")
+                            if success:
                                 log("")
                                 log("=" * 60)
                                 log("完了！")
@@ -1768,21 +1820,14 @@ fi
                                 messagebox.showinfo("成功", 
                                     f"{len(fixed_files)}個のファイルを修正してGitHubに再アップロードしました。")
                             else:
-                                log(f"✗ プッシュ失敗: {result.stderr}")
-                                messagebox.showerror("エラー", f"プッシュに失敗しました:\n{result.stderr}")
+                                messagebox.showerror("エラー", f"プッシュに失敗しました:\n{error}")
                         else:
                             log("")
                             log("プッシュはキャンセルされました。")
                             log("後で手動でプッシュしてください:")
                             log("  git push origin master --force")
                     else:
-                        log(f"✗ コミット失敗: {result.stderr}")
-                        messagebox.showerror("エラー", f"コミットに失敗しました:\n{result.stderr}")
-                    
-                    # Add close button
-                    close_btn = ttk.Button(progress_dialog, text="閉じる", 
-                                          command=progress_dialog.destroy)
-                    close_btn.pack(pady=10)
+                        messagebox.showerror("エラー", f"コミットに失敗しました:\n{error}")
                     
                 except Exception as e:
                     log(f"エラー: {e}")
@@ -1815,6 +1860,12 @@ fi
                 'resin_washer_model': '樹脂ワッシャー検査モデル',
                 'scripts': 'スクリプト集',
                 
+                # Main Files (改良版)
+                'main.py': 'メイン検査システム',
+                'camera_inspection.py': 'カメラ検査システム（改良版）',
+                'scripts/train_4class_sparse_ensemble.py': '4クラス分類学習スクリプト（改良版）',
+                'auto-commit.ps1': '自動コミットスクリプト（改良版）',
+                
                 # Files
                 '.gitignore': 'Git除外設定ファイル',
                 '.test_encoding_check.txt': 'エンコーディング確認テストファイル',
@@ -1826,29 +1877,27 @@ fi
                 'NETWORK_SETUP_GUIDE.md': 'ネットワーク設定ガイド',
                 'README.md': 'プロジェクト説明書',
                 'change_history_viewer.py': '変更履歴ビューアーアプリ',
-                'auto-commit.ps1': '自動コミットスクリプト',
                 'test_auto_commit.ps1': '自動コミットテストスクリプト',
                 'start_history_viewer.bat': '履歴ビューアー起動バッチ',
                 'fix_git_encoding.md': 'Gitエンコーディング修正ガイド',
+                'organize_duplicate_files.py': '重複ファイル整理スクリプト',
+                
+                # Duplicate files (old versions - will be moved to old/duplicate_files/)
+                'all_cameras_inspection.py': '全カメラ検査システム（旧版）',
+                'camera_selector_inspection.py': 'カメラ選択システム（旧版）',
+                'fundamental_fix_inspection.py': '基礎修正検査システム（旧版）',
+                'fixed_inspection.py': '修正済み検査システム（旧版）',
+                'perfect_focus_restored.py': 'ピント復元検査システム（旧版）',
+                'focus_enhanced_inspection.py': 'ピント強化検査システム（旧版）',
+                'high_accuracy_inspection.py': '高精度検査システム（旧版）',
+                'network_washer_inspection_system.py': 'ネットワーク検査システム（旧版）',
+                'enhanced_trainer.py': '強化学習スクリプト（旧版）',
+                'improved_trainer.py': '改良学習スクリプト（旧版）',
+                'high_accuracy_trainer.py': '高精度学習スクリプト（旧版）',
             }
             
-            # Show progress dialog
-            progress_dialog = tk.Toplevel(self.root)
-            progress_dialog.title("コミットメッセージ更新")
-            progress_dialog.geometry("700x600")
-            progress_dialog.transient(self.root)
-            progress_dialog.grab_set()
-            
-            progress_label = ttk.Label(progress_dialog, text="ファイルを処理中...")
-            progress_label.pack(pady=10)
-            
-            progress_text = scrolledtext.ScrolledText(progress_dialog, height=25, width=80)
-            progress_text.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
-            
-            def log(message):
-                progress_text.insert(tk.END, message + "\n")
-                progress_text.see(tk.END)
-                progress_dialog.update()
+            # Use common progress dialog
+            progress_dialog, log, close_btn = self.create_progress_dialog("コミットメッセージ更新", width=700, height=600)
             
             def process_files():
                 try:
@@ -1926,9 +1975,20 @@ fi
                                 log(f"  ✗ エラー: {e}")
                                 continue
                             
-                            # Commit with description
+                            # Check current commit message for this file
+                            cmd = ["git", "log", "-1", "--format=%s", "--", item_path]
+                            current_msg_result = subprocess.run(cmd, capture_output=True, text=True, 
+                                                               encoding='utf-8', errors='replace')
+                            current_message = current_msg_result.stdout.strip() if current_msg_result.returncode == 0 else ""
+                            
+                            # If message is already correct, skip
+                            if current_message == description:
+                                log(f"  → コミットメッセージは既に正しい（スキップ）")
+                                continue
+                            
+                            # Commit with description (allow empty if no changes)
                             commit_message = description
-                            cmd = ["git", "commit", "-m", commit_message]
+                            cmd = ["git", "commit", "--allow-empty", "-m", commit_message]
                             result = subprocess.run(cmd, capture_output=True, text=True, 
                                                   encoding='utf-8', errors='replace')
                             
@@ -1941,7 +2001,15 @@ fi
                                 status_result = subprocess.run(cmd, capture_output=True, text=True, 
                                                              encoding='utf-8', errors='replace')
                                 if not status_result.stdout.strip():
-                                    log(f"  → 変更なし（スキップ）")
+                                    # No changes, try with --allow-empty
+                                    cmd = ["git", "commit", "--allow-empty", "-m", commit_message]
+                                    result = subprocess.run(cmd, capture_output=True, text=True, 
+                                                          encoding='utf-8', errors='replace')
+                                    if result.returncode == 0:
+                                        log(f"  → コミット成功（空コミット）: {commit_message}")
+                                        updated_count += 1
+                                    else:
+                                        log(f"  → 変更なし（スキップ）")
                                 else:
                                     log(f"  ✗ コミット失敗: {result.stderr}")
                             
@@ -1966,9 +2034,21 @@ fi
                                     except Exception as e:
                                         log(f"  ✗ {os.path.basename(file)}: {e}")
                                 
-                                # Commit with description
+                                # Check current commit message for this directory
+                                cmd = ["git", "log", "-1", "--format=%s", "--", item_path]
+                                current_msg_result = subprocess.run(cmd, capture_output=True, text=True, 
+                                                                   encoding='utf-8', errors='replace')
+                                current_message = current_msg_result.stdout.strip() if current_msg_result.returncode == 0 else ""
+                                
+                                # If message is already correct, skip
+                                if current_message == description:
+                                    log(f"  → コミットメッセージは既に正しい（スキップ）")
+                                    log("")
+                                    continue
+                                
+                                # Commit with description (allow empty if no changes)
                                 commit_message = description
-                                cmd = ["git", "commit", "-m", commit_message]
+                                cmd = ["git", "commit", "--allow-empty", "-m", commit_message]
                                 result = subprocess.run(cmd, capture_output=True, text=True, 
                                                       encoding='utf-8', errors='replace')
                                 
@@ -1981,7 +2061,15 @@ fi
                                     status_result = subprocess.run(cmd, capture_output=True, text=True, 
                                                                  encoding='utf-8', errors='replace')
                                     if not status_result.stdout.strip():
-                                        log(f"  → 変更なし（スキップ）")
+                                        # No changes, try with --allow-empty
+                                        cmd = ["git", "commit", "--allow-empty", "-m", commit_message]
+                                        result = subprocess.run(cmd, capture_output=True, text=True, 
+                                                              encoding='utf-8', errors='replace')
+                                        if result.returncode == 0:
+                                            log(f"  → コミット成功（空コミット）: {commit_message}")
+                                            updated_count += 1
+                                        else:
+                                            log(f"  → 変更なし（スキップ）")
                                     else:
                                         log(f"  ✗ コミット失敗: {result.stderr}")
                                 
