@@ -112,6 +112,9 @@ class ChangeHistoryViewer:
         fix_files_btn = ttk.Button(button_frame, text="Fix Garbled Files", command=self.fix_garbled_files)
         fix_files_btn.pack(side=tk.LEFT, padx=(0, 5))
         
+        fix_all_commits_btn = ttk.Button(button_frame, text="Fix All Garbled Commits", command=self.fix_all_garbled_commits)
+        fix_all_commits_btn.pack(side=tk.LEFT, padx=(0, 5))
+        
         # Auto-commit toggle
         self.auto_commit_var = tk.BooleanVar(value=self.auto_commit_enabled)
         auto_commit_check = ttk.Checkbutton(button_frame, text="Enable Auto Commit", 
