@@ -844,10 +844,12 @@ class ChangeHistoryViewer:
             
             # Check if content is garbled or needs conversion
             needs_fix = False
+            is_garbled_detected = False
             
             if is_utf8 and self.is_garbled(content):
                 # UTF-8として読めたが文字化けしている
                 needs_fix = True
+                is_garbled_detected = True
                 if log_func:
                     log_func(f"文字化け検出: {file_path}")
             elif not is_utf8:
@@ -857,23 +859,29 @@ class ChangeHistoryViewer:
                     log_func(f"Shift-JIS検出: {file_path}")
             
             if needs_fix:
-                # Try to fix by decoding as Shift-JIS and converting to UTF-8
-                try:
-                    decoded = raw_bytes.decode('shift_jis')
-                    # Write back as UTF-8
-                    with open(file_path, 'w', encoding='utf-8') as f:
-                        f.write(decoded)
-                    if log_func:
-                        log_func(f"  → 修正完了: {file_path}")
-                    return True, "修正完了"
-                except UnicodeDecodeError:
-                    if log_func:
-                        log_func(f"  → 修正失敗: Shift-JISとして解釈できませんでした")
-                    return False, "Shift-JISとして解釈できません"
-                except Exception as e:
-                    if log_func:
-                        log_func(f"  → エラー: {e}")
-                    return False, str(e)
+                # Try multiple encodings to fix
+                encodings_to_try = ['shift_jis', 'cp932', 'euc-jp', 'iso-2022-jp']
+                
+                for encoding in encodings_to_try:
+                    try:
+                        decoded = raw_bytes.decode(encoding)
+                        # Write back as UTF-8
+                        with open(file_path, 'w', encoding='utf-8') as f:
+                            f.write(decoded)
+                        if log_func:
+                            log_func(f"  → 修正完了: {file_path} (エンコーディング: {encoding})")
+                        return True, "修正完了"
+                    except (UnicodeDecodeError, UnicodeEncodeError):
+                        continue
+                    except Exception as e:
+                        if log_func:
+                            log_func(f"  → エラー: {e}")
+                        return False, f"エラー: {str(e)}"
+                
+                # All encodings failed
+                if log_func:
+                    log_func(f"  → 修正失敗: 複数のエンコーディングを試しましたが、解釈できませんでした")
+                return False, "Shift-JISとして解釈できません"
             else:
                 # Already UTF-8 and not garbled - ensure it's saved as UTF-8
                 try:
@@ -1252,6 +1260,7 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
                     
                     garbled_files = []
                     fixed_files = []
+                    failed_files = []
                     
                     for file_path in text_files:
                         # Skip if file doesn't exist
@@ -1260,15 +1269,28 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
                         
                         # Use common encoding fix function
                         success, status = self.fix_file_encoding(file_path, log_func=log)
-                        if success and status == "修正完了":
-                            garbled_files.append(file_path)
-                            fixed_files.append(file_path)
+                        
+                        # 文字化け検出されたファイルを記録
+                        if status == "修正完了" or status == "Shift-JISとして解釈できません" or "エラー" in status:
+                            # 文字化けが検出されたが修正に失敗した場合
+                            if status == "Shift-JISとして解釈できません" or "エラー" in status:
+                                garbled_files.append(file_path)
+                                failed_files.append((file_path, status))
+                            elif success and status == "修正完了":
+                                garbled_files.append(file_path)
+                                fixed_files.append(file_path)
                     
                     log("")
                     log("=" * 60)
                     log(f"スキャン完了")
                     log(f"文字化けファイル: {len(garbled_files)}個")
                     log(f"修正完了ファイル: {len(fixed_files)}個")
+                    if failed_files:
+                        log(f"修正失敗ファイル: {len(failed_files)}個")
+                        log("")
+                        log("修正失敗したファイル:")
+                        for file_path, reason in failed_files:
+                            log(f"  • {file_path}: {reason}")
                     log("")
                     
                     if fixed_files:
@@ -1306,6 +1328,15 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
                                         messagebox.showerror("エラー", f"プッシュに失敗しました:\n{error}")
                                 else:
                                     messagebox.showerror("エラー", f"コミットに失敗しました:\n{error}")
+                    elif garbled_files:
+                        # 文字化けファイルは見つかったが修正できなかった
+                        log("⚠️ 文字化けファイルが見つかりましたが、一部または全部の修正に失敗しました。")
+                        log("")
+                        log("手動で確認・修正してください。")
+                        messagebox.showwarning("注意", 
+                            f"{len(garbled_files)}個の文字化けファイルが見つかりましたが、"
+                            f"修正に失敗したファイルが{len(failed_files)}個あります。\n\n"
+                            "詳細はログを確認してください。")
                     else:
                         log("修正が必要なファイルは見つかりませんでした。")
                         messagebox.showinfo("完了", "文字化けファイルは見つかりませんでした。")
