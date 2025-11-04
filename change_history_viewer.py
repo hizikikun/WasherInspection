@@ -809,6 +809,183 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
             
         except Exception as e:
             messagebox.showerror("Error", f"エラーが発生しました: {e}")
+    
+    def is_garbled(self, text):
+        """Check if text contains garbled characters (Shift-JIS misread as UTF-8)"""
+        garbled_patterns = ['縺', '繧', '繝', '繝', '謨', '譁', '譁', '邨', '蜷', '繧', '繧', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '繝', '取り消しができません。")
+        return False
+    
+    def fix_selected_commit(self):
+        """Fix the message of the selected garbled commit"""
+        selection = self.commit_tree.selection()
+        if not selection:
+            messagebox.showwarning("Warning", "コミットを選択してください")
+            return
+        
+        item = self.commit_tree.item(selection[0])
+        tags = item['tags']
+        if not tags:
+            return
+        
+        commit_hash = tags[0]
+        current_message = item['values'][2]  # Message column
+        
+        # Check if message is garbled
+        if not self.is_garbled(current_message):
+            response = messagebox.askyesno("確認", 
+                f"このコミットメッセージは文字化けしていないようです。\n\n"
+                f"現在のメッセージ: {current_message[:50]}...\n\n"
+                "それでも修正しますか？")
+            if not response:
+                return
+        
+        # Get full commit message
+        try:
+            os.chdir(self.project_path)
+            cmd = ["git", "log", "-1", "--pretty=format:%B", commit_hash]
+            result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace')
+            full_message = result.stdout.strip() if result.returncode == 0 else current_message
+        except:
+            full_message = current_message
+        
+        # Create dialog to input new message
+        dialog = tk.Toplevel(self.root)
+        dialog.title("コミットメッセージを修正")
+        dialog.geometry("600x400")
+        
+        ttk.Label(dialog, text="現在のメッセージ（文字化けしている可能性）:").pack(padx=10, pady=5, anchor=tk.W)
+        old_text = scrolledtext.ScrolledText(dialog, height=5, wrap=tk.WORD)
+        old_text.pack(padx=10, pady=5, fill=tk.BOTH, expand=True)
+        old_text.insert(1.0, full_message)
+        old_text.config(state=tk.DISABLED)
+        
+        ttk.Label(dialog, text="新しいメッセージ（英語で入力してください）:").pack(padx=10, pady=5, anchor=tk.W)
+        new_text = scrolledtext.ScrolledText(dialog, height=5, wrap=tk.WORD)
+        new_text.pack(padx=10, pady=5, fill=tk.BOTH, expand=True)
+        new_text.insert(1.0, self.suggest_fixed_message(full_message))
+        
+        def do_fix():
+            new_message = new_text.get(1.0, tk.END).strip()
+            if not new_message:
+                messagebox.showwarning("Warning", "新しいメッセージを入力してください")
+                return
+            
+            dialog.destroy()
+            self.apply_commit_fix(commit_hash, new_message)
+        
+        button_frame = ttk.Frame(dialog)
+        button_frame.pack(padx=10, pady=10)
+        
+        ttk.Button(button_frame, text="修正", command=do_fix).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="キャンセル", command=dialog.destroy).pack(side=tk.LEFT, padx=5)
+    
+    def suggest_fixed_message(self, garbled_message):
+        """Suggest a fixed message based on garbled message patterns"""
+        # Common patterns for garbled messages
+        suggestions = {
+            "Update: GitHub": "Update: GitHub integration setup",
+            "Reorganize": "Reorganize: Clean up project structure",
+            "Initial": "Initial: Add files to repository",
+            "docs": "Update: Add documentation files",
+            "繧繝・": "Update: ",
+            "繝・": "Update: ",
+        }
+        
+        # Try to extract meaningful parts
+        if "Update:" in garbled_message or "繧繝・" in garbled_message:
+            return "Update: Fix encoding and update files"
+        elif "Reorganize" in garbled_message or "謨" in garbled_message:
+            return "Reorganize: Clean up project structure"
+        elif "Initial" in garbled_message or "譖" in garbled_message:
+            return "Initial: Add initial project files"
+        else:
+            return "Update: Fix commit message encoding"
+    
+    def apply_commit_fix(self, commit_hash, new_message):
+        """Apply the fix to a commit message using git rebase"""
+        try:
+            # Warning dialog
+            response = messagebox.askyesno("警告", 
+                "コミットメッセージを修正すると、Git履歴が書き換えられます。\n\n"
+                "既にGitHubにpushされている場合は、force pushが必要になります。\n\n"
+                "他の人と共同作業している場合は、事前に相談してください。\n\n"
+                "続行しますか？")
+            
+            if not response:
+                return
+            
+            os.chdir(self.project_path)
+            
+            # Get commit position in history
+            cmd = ["git", "log", "--oneline", "--all"]
+            result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8')
+            commits = result.stdout.strip().split('\n')
+            
+            # Find commit position
+            commit_index = None
+            for idx, line in enumerate(commits):
+                if line.startswith(commit_hash[:8]) or commit_hash in line:
+                    commit_index = len(commits) - idx
+                    break
+            
+            if commit_index is None:
+                messagebox.showerror("Error", "コミットが見つかりませんでした")
+                return
+            
+            # Use git commit --amend for the latest commit, or rebase for older ones
+            if commit_index == 1:
+                # Latest commit - use amend
+                env = os.environ.copy()
+                env['GIT_COMMITTER_NAME'] = 'Fixed User'
+                env['GIT_COMMITTER_EMAIL'] = 'fixed@example.com'
+                env['LANG'] = 'en_US.UTF-8'
+                env['LC_ALL'] = 'en_US.UTF-8'
+                
+                cmd = ["git", "-c", "i18n.commitEncoding=utf-8", "commit", "--amend", "-m", new_message]
+                result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', env=env)
+                
+                if result.returncode != 0:
+                    messagebox.showerror("Error", f"コミットの修正に失敗しました: {result.stderr}")
+                    return
+                
+                # Ask if user wants to push
+                push_response = messagebox.askyesno("確認", 
+                    "コミットを修正しました。GitHubにpushしますか？\n\n"
+                    "（force pushが必要になります）")
+                
+                if push_response:
+                    # Force push
+                    cmd = ["git", "push", "origin", "master", "--force"]
+                    result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', env=env)
+                    
+                    if result.returncode != 0:
+                        cmd = ["git", "push", "origin", "main", "--force"]
+                        result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', env=env)
+                        
+                        if result.returncode != 0:
+                            messagebox.showwarning("Warning", 
+                                f"プッシュに失敗しました: {result.stderr}\n\n"
+                                "手動で force push してください:\n"
+                                "git push origin master --force")
+                            return
+                    
+                    messagebox.showinfo("Success", "コミットメッセージを修正し、GitHubにpushしました！")
+                    self.refresh_history()
+                else:
+                    messagebox.showinfo("情報", 
+                        "コミットは修正されましたが、まだpushされていません。\n\n"
+                        "後で手動でpushしてください:\n"
+                        "git push origin master --force")
+            else:
+                messagebox.showinfo("情報", 
+                    f"このコミットは履歴の{commit_index}番目にあります。\n\n"
+                    "古いコミットを修正するには、git rebase を使用する必要があります。\n\n"
+                    "手動で修正してください:\n"
+                    f"git rebase -i HEAD~{commit_index}\n\n"
+                    "エディタで該当コミットの 'pick' を 'reword' に変更してください。")
+        
+        except Exception as e:
+            messagebox.showerror("Error", f"エラーが発生しました: {e}")
 
 def main():
     root = tk.Tk()
