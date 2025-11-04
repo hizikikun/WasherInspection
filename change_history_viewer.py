@@ -230,6 +230,12 @@ class ChangeHistoryViewer:
 
         
 
+        fix_messages_btn = ttk.Button(commit_frame, text="コミットメッセージ修正", command=self.fix_commit_messages)
+
+        fix_messages_btn.pack(side=tk.LEFT, padx=(0, 5))
+
+        
+
         # Auto-commit toggle
 
         self.auto_commit_var = tk.BooleanVar(value=self.auto_commit_enabled)
