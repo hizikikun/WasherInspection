@@ -106,9 +106,6 @@ class ChangeHistoryViewer:
         test_commit_btn = ttk.Button(button_frame, text="Test Commit (UTF-8)", command=self.create_test_commit)
         test_commit_btn.pack(side=tk.LEFT, padx=(0, 5))
         
-        fix_garbled_btn = ttk.Button(button_frame, text="Fix Garbled Commits", command=self.fix_garbled_commits)
-        fix_garbled_btn.pack(side=tk.LEFT, padx=(0, 5))
-        
         # Auto-commit toggle
         self.auto_commit_var = tk.BooleanVar(value=self.auto_commit_enabled)
         auto_commit_check = ttk.Checkbutton(button_frame, text="Enable Auto Commit", 
@@ -736,6 +733,79 @@ class ChangeHistoryViewer:
             except Exception as e:
                 print(f"Monitoring error: {e}")
                 time.sleep(30)
+    
+    def create_test_commit(self):
+        """Create a test commit with UTF-8 encoding to verify encoding settings"""
+        try:
+            os.chdir(self.project_path)
+            
+            # Create a test file with Japanese content
+            test_file = self.project_path / ".test_encoding_check.txt"
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            test_content = f"""テストコミット: UTF-8エンコーディング確認
+Test Commit: UTF-8 Encoding Verification
+作成日時: {timestamp}
+
+このファイルは文字化けしないことを確認するためのテストファイルです。
+This file is for testing UTF-8 encoding to ensure no garbled characters.
+"""
+            
+            # Write test file with UTF-8 encoding
+            with open(test_file, 'w', encoding='utf-8') as f:
+                f.write(test_content)
+            
+            # Set Git environment for UTF-8
+            env = os.environ.copy()
+            env['GIT_COMMITTER_NAME'] = 'Test User'
+            env['GIT_COMMITTER_EMAIL'] = 'test@example.com'
+            env['LANG'] = 'en_US.UTF-8'
+            env['LC_ALL'] = 'en_US.UTF-8'
+            
+            # Add the test file
+            cmd = ["git", "add", str(test_file)]
+            result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', env=env)
+            
+            if result.returncode != 0:
+                messagebox.showerror("Error", f"ファイルの追加に失敗しました: {result.stderr}")
+                return
+            
+            # Create commit with UTF-8 message
+            commit_message = f"テストコミット (UTF-8): {timestamp}\nTest commit to verify UTF-8 encoding is working correctly."
+            
+            # Use git commit with explicit UTF-8 encoding
+            cmd = ["git", "-c", "i18n.commitEncoding=utf-8", "commit", "-m", commit_message]
+            result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', env=env)
+            
+            if result.returncode != 0:
+                messagebox.showerror("Error", f"コミットに失敗しました: {result.stderr}")
+                return
+            
+            # Push to GitHub
+            cmd = ["git", "push", "origin", "master"]
+            result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', env=env)
+            
+            if result.returncode != 0:
+                # Try 'main' branch if 'master' fails
+                cmd = ["git", "push", "origin", "main"]
+                result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', env=env)
+                
+                if result.returncode != 0:
+                    messagebox.showwarning("Warning", 
+                        f"コミットは成功しましたが、プッシュに失敗しました: {result.stderr}\n\n"
+                        "手動でプッシュしてください。")
+                    self.refresh_history()
+                    return
+            
+            messagebox.showinfo("Success", 
+                f"テストコミットが正常に作成され、GitHubにプッシュされました！\n\n"
+                f"コミットメッセージ: {commit_message[:50]}...\n\n"
+                "GitHubで文字化けしていないか確認してください。")
+            
+            # Refresh history
+            self.refresh_history()
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"エラーが発生しました: {e}")
 
 def main():
     root = tk.Tk()
