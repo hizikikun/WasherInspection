@@ -1,91 +1,91 @@
-name: Process Inspection Results
-
-on:
-  issues:
-    types: [opened, edited]
-  schedule:
-    - cron: '0 */6 * * *'  # Every 6 hours
-
-jobs:
-  process-inspection:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-    
-    - name: Process inspection results
-      run: |
-        echo "Processing inspection results..."
-        
-        # Count issues by type
-        GOOD_COUNT=$(gh issue list --label "good" --state all --json number | jq length)
-        NG_COUNT=$(gh issue list --label "ng" --state all --json number | jq length)
-        TOTAL_COUNT=$((GOOD_COUNT + NG_COUNT))
-        
-        echo "Good inspections: $GOOD_COUNT"
-        echo "NG inspections: $NG_COUNT"
-        echo "Total inspections: $TOTAL_COUNT"
-        
-        # Calculate success rate
-        if [ $TOTAL_COUNT -gt 0 ]; then
-          SUCCESS_RATE=$((GOOD_COUNT * 100 / TOTAL_COUNT))
-          echo "Success rate: $SUCCESS_RATE%"
-        fi
-        
-        # Create summary issue if needed
-        if [ $TOTAL_COUNT -gt 0 ] && [ $((TOTAL_COUNT % 50)) -eq 0 ]; then
-          gh issue create \
-            --title "📊 Inspection Summary - $TOTAL_COUNT inspections completed" \
-            --body "## Inspection Summary
-
-**Total Inspections**: $TOTAL_COUNT
-**Good Inspections**: $GOOD_COUNT
-**NG Inspections**: $NG_COUNT
-**Success Rate**: $SUCCESS_RATE%
-
-This summary is automatically generated every 50 inspections." \
-            --label "summary,automated"
-        fi
-    
-    - name: Generate daily report
-      if: github.event_name == 'schedule'
-      run: |
-        TODAY=$(date +%Y-%m-%d)
-        YESTERDAY=$(date -d "yesterday" +%Y-%m-%d)
-        
-        # Count today's inspections
-        TODAY_GOOD=$(gh issue list --label "good" --state all --search "created:$TODAY" --json number | jq length)
-        TODAY_NG=$(gh issue list --label "ng" --state all --search "created:$TODAY" --json number | jq length)
-        TODAY_TOTAL=$((TODAY_GOOD + TODAY_NG))
-        
-        if [ $TODAY_TOTAL -gt 0 ]; then
-          gh issue create \
-            --title "📈 Daily Report - $TODAY" \
-            --body "## Daily Inspection Report - $TODAY
-
-**Today's Inspections**: $TODAY_TOTAL
-- Good: $TODAY_GOOD
-- NG: $TODAY_NG
-
-**Success Rate**: $((TODAY_GOOD * 100 / TODAY_TOTAL))%
-
-This report is automatically generated daily." \
-            --label "daily-report,automated"
-        fi
-
-  notify-on-ng:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'ng')
-    
-    steps:
-    - name: Notify on NG detection
-      run: |
-        echo "NG inspection detected!"
-        echo "Issue: ${{ github.event.issue.title }}"
-        echo "URL: ${{ github.event.issue.html_url }}"
-        
-        # You can add webhook notifications here
-        # curl -X POST -H 'Content-type: application/json' \
-        #   --data '{"text":"NG inspection detected: ${{ github.event.issue.title }}"}' \
-        #   ${{ secrets.SLACK_WEBHOOK_URL }}
+name: Process Inspection Results
+
+on:
+  issues:
+    types: [opened, edited]
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+
+jobs:
+  process-inspection:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Process inspection results
+      run: |
+        echo "Processing inspection results..."
+        
+        # Count issues by type
+        GOOD_COUNT=$(gh issue list --label "good" --state all --json number | jq length)
+        NG_COUNT=$(gh issue list --label "ng" --state all --json number | jq length)
+        TOTAL_COUNT=$((GOOD_COUNT + NG_COUNT))
+        
+        echo "Good inspections: $GOOD_COUNT"
+        echo "NG inspections: $NG_COUNT"
+        echo "Total inspections: $TOTAL_COUNT"
+        
+        # Calculate success rate
+        if [ $TOTAL_COUNT -gt 0 ]; then
+          SUCCESS_RATE=$((GOOD_COUNT * 100 / TOTAL_COUNT))
+          echo "Success rate: $SUCCESS_RATE%"
+        fi
+        
+        # Create summary issue if needed
+        if [ $TOTAL_COUNT -gt 0 ] && [ $((TOTAL_COUNT % 50)) -eq 0 ]; then
+          gh issue create \
+            --title "📊 Inspection Summary - $TOTAL_COUNT inspections completed" \
+            --body "## Inspection Summary
+
+**Total Inspections**: $TOTAL_COUNT
+**Good Inspections**: $GOOD_COUNT
+**NG Inspections**: $NG_COUNT
+**Success Rate**: $SUCCESS_RATE%
+
+This summary is automatically generated every 50 inspections." \
+            --label "summary,automated"
+        fi
+    
+    - name: Generate daily report
+      if: github.event_name == 'schedule'
+      run: |
+        TODAY=$(date +%Y-%m-%d)
+        YESTERDAY=$(date -d "yesterday" +%Y-%m-%d)
+        
+        # Count today's inspections
+        TODAY_GOOD=$(gh issue list --label "good" --state all --search "created:$TODAY" --json number | jq length)
+        TODAY_NG=$(gh issue list --label "ng" --state all --search "created:$TODAY" --json number | jq length)
+        TODAY_TOTAL=$((TODAY_GOOD + TODAY_NG))
+        
+        if [ $TODAY_TOTAL -gt 0 ]; then
+          gh issue create \
+            --title "📈 Daily Report - $TODAY" \
+            --body "## Daily Inspection Report - $TODAY
+
+**Today's Inspections**: $TODAY_TOTAL
+- Good: $TODAY_GOOD
+- NG: $TODAY_NG
+
+**Success Rate**: $((TODAY_GOOD * 100 / TODAY_TOTAL))%
+
+This report is automatically generated daily." \
+            --label "daily-report,automated"
+        fi
+
+  notify-on-ng:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'ng')
+    
+    steps:
+    - name: Notify on NG detection
+      run: |
+        echo "NG inspection detected!"
+        echo "Issue: ${{ github.event.issue.title }}"
+        echo "URL: ${{ github.event.issue.html_url }}"
+        
+        # You can add webhook notifications here
+        # curl -X POST -H 'Content-type: application/json' \
+        #   --data '{"text":"NG inspection detected: ${{ github.event.issue.title }}"}' \
+        #   ${{ secrets.SLACK_WEBHOOK_URL }}

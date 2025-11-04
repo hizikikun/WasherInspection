@@ -137,6 +137,9 @@ class ChangeHistoryViewer:
         reupload_all_btn = ttk.Button(fix_frame, text="全ファイル再アップロード", command=self.reupload_all_files)
         reupload_all_btn.pack(side=tk.LEFT, padx=(0, 5))
         
+        scan_github_btn = ttk.Button(fix_frame, text="GitHub文字化け検出", command=self.scan_github_garbled_files)
+        scan_github_btn.pack(side=tk.LEFT, padx=(0, 5))
+        
         update_commit_messages_btn = ttk.Button(fix_frame, text="コミットメッセージ更新", command=self.update_commit_messages)
         update_commit_messages_btn.pack(side=tk.LEFT)
         
@@ -1838,6 +1841,179 @@ fi
             
             # Run in background thread
             threading.Thread(target=process_files, daemon=True).start()
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"エラーが発生しました: {e}")
+    
+    def scan_github_garbled_files(self):
+        """Scan GitHub remote repository for garbled files"""
+        try:
+            os.chdir(self.project_path)
+            
+            # Use common progress dialog
+            progress_dialog, log, close_btn = self.create_progress_dialog("GitHub文字化けファイル検出", width=800, height=700)
+            
+            def scan_files():
+                try:
+                    log("=" * 60)
+                    log("GitHub上の文字化けファイルを検出中...")
+                    log("")
+                    
+                    # Step 1: Pull latest from GitHub
+                    log("ステップ1: GitHubから最新のファイル情報を取得中...")
+                    log("")
+                    
+                    cmd = ["git", "fetch", "origin"]
+                    result = subprocess.run(cmd, capture_output=True, text=True, 
+                                          encoding='utf-8', errors='replace')
+                    
+                    if result.returncode != 0:
+                        log(f"⚠️ 警告: fetchに失敗しましたが、続行します: {result.stderr}")
+                    
+                    log("")
+                    log("=" * 60)
+                    log("ステップ2: リモートブランチのファイル一覧を取得中...")
+                    log("")
+                    
+                    # Step 2: Get all files from remote
+                    cmd = ["git", "ls-tree", "-r", "--name-only", "origin/master"]
+                    result = subprocess.run(cmd, capture_output=True, text=True, 
+                                          encoding='utf-8', errors='replace')
+                    
+                    if result.returncode != 0:
+                        # Try origin/main
+                        cmd = ["git", "ls-tree", "-r", "--name-only", "origin/main"]
+                        result = subprocess.run(cmd, capture_output=True, text=True, 
+                                              encoding='utf-8', errors='replace')
+                    
+                    if result.returncode != 0:
+                        log("✗ エラー: リモートブランチにアクセスできません")
+                        log("ローカルファイルをスキャンします...")
+                        # Fallback to local files
+                        cmd = ["git", "ls-files"]
+                        result = subprocess.run(cmd, capture_output=True, text=True, 
+                                              encoding='utf-8', errors='replace')
+                        
+                        if result.returncode != 0:
+                            log("✗ エラー: Gitリポジトリではありません")
+                            return
+                    
+                    files = [f.strip() for f in result.stdout.strip().split('\n') if f.strip()]
+                    log(f"スキャン対象ファイル数: {len(files)}")
+                    log("")
+                    
+                    # Filter text files
+                    text_files = self.get_text_files(files, log_func=log)
+                    log("")
+                    
+                    log("=" * 60)
+                    log("ステップ3: 各ファイルの内容をチェック中...")
+                    log("")
+                    
+                    garbled_files = []
+                    checked_count = 0
+                    
+                    for file_path in text_files:
+                        checked_count += 1
+                        if checked_count % 10 == 0:
+                            log(f"チェック中... ({checked_count}/{len(text_files)})")
+                            progress_dialog.update()
+                        
+                        try:
+                            # Get file content from remote (or HEAD if remote fails)
+                            cmd = ["git", "show", f"origin/master:{file_path}"]
+                            result = subprocess.run(cmd, capture_output=True, text=True, 
+                                                  encoding='utf-8', errors='replace')
+                            
+                            if result.returncode != 0:
+                                # Try origin/main
+                                cmd = ["git", "show", f"origin/main:{file_path}"]
+                                result = subprocess.run(cmd, capture_output=True, text=True, 
+                                                      encoding='utf-8', errors='replace')
+                            
+                            if result.returncode != 0:
+                                # Fallback to HEAD
+                                cmd = ["git", "show", f"HEAD:{file_path}"]
+                                result = subprocess.run(cmd, capture_output=True, text=True, 
+                                                      encoding='utf-8', errors='replace')
+                            
+                            if result.returncode == 0:
+                                content = result.stdout
+                                
+                                # Check if content is garbled
+                                if self.is_garbled(content):
+                                    garbled_files.append(file_path)
+                                    log(f"✗ 文字化け検出: {file_path}")
+                        except Exception as e:
+                            # Skip binary files or files that can't be read
+                            pass
+                    
+                    log("")
+                    log("=" * 60)
+                    log(f"スキャン完了")
+                    log(f"チェックしたファイル数: {checked_count}")
+                    log(f"文字化けファイル数: {len(garbled_files)}")
+                    log("")
+                    
+                    if garbled_files:
+                        log("=" * 60)
+                        log("文字化けしているファイル:")
+                        log("=" * 60)
+                        for file_path in garbled_files:
+                            log(f"  • {file_path}")
+                        log("")
+                        log("=" * 60)
+                        log("")
+                        log("これらのファイルを修正しますか？")
+                        log("「ファイル修正」ボタンを使用して修正できます。")
+                        
+                        # Show result window
+                        result_window = tk.Toplevel(progress_dialog)
+                        result_window.title("文字化けファイル検出結果")
+                        result_window.geometry("600x400")
+                        result_window.transient(progress_dialog)
+                        
+                        result_label = ttk.Label(result_window, 
+                                                text=f"{len(garbled_files)}個の文字化けファイルが見つかりました",
+                                                font=("", 10, "bold"))
+                        result_label.pack(pady=10)
+                        
+                        result_text = scrolledtext.ScrolledText(result_window, height=15, width=70)
+                        result_text.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+                        
+                        for file_path in garbled_files:
+                            result_text.insert(tk.END, f"{file_path}\n")
+                        
+                        result_text.config(state=tk.DISABLED)
+                        
+                        def fix_files():
+                            result_window.destroy()
+                            progress_dialog.destroy()
+                            self.fix_garbled_files()
+                        
+                        fix_btn = ttk.Button(result_window, text="修正する", command=fix_files)
+                        fix_btn.pack(pady=10)
+                        
+                        close_result_btn = ttk.Button(result_window, text="閉じる", 
+                                                      command=result_window.destroy)
+                        close_result_btn.pack(pady=5)
+                        
+                        messagebox.showinfo("検出完了", 
+                            f"{len(garbled_files)}個の文字化けファイルが見つかりました。\n\n"
+                            "結果ウィンドウで詳細を確認できます。")
+                    else:
+                        log("文字化けファイルは見つかりませんでした。")
+                        log("すべてのファイルは正常なエンコーディングです。")
+                        messagebox.showinfo("検出完了", "文字化けファイルは見つかりませんでした。")
+                    
+                except Exception as e:
+                    log(f"エラー: {e}")
+                    import traceback
+                    log(traceback.format_exc())
+                    messagebox.showerror("Error", f"エラーが発生しました: {e}")
+            
+            # Run scan in background thread
+            threading.Thread(target=scan_files, daemon=True).start()
             
         except Exception as e:
             messagebox.showerror("Error", f"エラーが発生しました: {e}")
