@@ -1796,6 +1796,247 @@ fi
             
         except Exception as e:
             messagebox.showerror("Error", f"エラーが発生しました: {e}")
+    
+    def update_commit_messages(self):
+        """Update commit messages for files with descriptive messages"""
+        try:
+            os.chdir(self.project_path)
+            
+            # File descriptions mapping
+            file_descriptions = {
+                # Folders
+                '.github/workflows': 'GitHub Actions ワークフロー設定',
+                'ai_learning_analysis': 'AI学習データ分析モジュール',
+                'backup': 'バックアップファイル',
+                'batch_files': 'バッチファイル集',
+                'docs': 'ドキュメント',
+                'github_tools': 'GitHub連携ツール',
+                'old': '旧ファイル',
+                'resin_washer_model': '樹脂ワッシャー検査モデル',
+                'scripts': 'スクリプト集',
+                
+                # Files
+                '.gitignore': 'Git除外設定ファイル',
+                '.test_encoding_check.txt': 'エンコーディング確認テストファイル',
+                'AUTO_COMMIT_README.md': '自動コミット機能の説明',
+                'CHANGE_HISTORY_VIEWER_README.md': '変更履歴ビューアーの説明',
+                'COMMIT_FIX_GUIDE.md': 'コミット修正ガイド',
+                'CURSOR_GITHUB_GUIDE.md': 'CursorとGitHub連携ガイド',
+                'GITHUB_AUTO_COMMIT_GUIDE.md': 'GitHub自動コミットガイド',
+                'NETWORK_SETUP_GUIDE.md': 'ネットワーク設定ガイド',
+                'README.md': 'プロジェクト説明書',
+                'change_history_viewer.py': '変更履歴ビューアーアプリ',
+                'auto-commit.ps1': '自動コミットスクリプト',
+                'test_auto_commit.ps1': '自動コミットテストスクリプト',
+                'start_history_viewer.bat': '履歴ビューアー起動バッチ',
+                'fix_git_encoding.md': 'Gitエンコーディング修正ガイド',
+            }
+            
+            # Show progress dialog
+            progress_dialog = tk.Toplevel(self.root)
+            progress_dialog.title("コミットメッセージ更新")
+            progress_dialog.geometry("700x600")
+            progress_dialog.transient(self.root)
+            progress_dialog.grab_set()
+            
+            progress_label = ttk.Label(progress_dialog, text="ファイルを処理中...")
+            progress_label.pack(pady=10)
+            
+            progress_text = scrolledtext.ScrolledText(progress_dialog, height=25, width=80)
+            progress_text.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+            
+            def log(message):
+                progress_text.insert(tk.END, message + "\n")
+                progress_text.see(tk.END)
+                progress_dialog.update()
+            
+            def process_files():
+                try:
+                    log("=" * 60)
+                    log("コミットメッセージを更新中...")
+                    log("")
+                    
+                    # Get all tracked files
+                    cmd = ["git", "ls-files"]
+                    result = subprocess.run(cmd, capture_output=True, text=True, 
+                                          encoding='utf-8', errors='replace')
+                    
+                    if result.returncode != 0:
+                        log("✗ エラー: Gitリポジトリではありません")
+                        return
+                    
+                    files = [f.strip() for f in result.stdout.strip().split('\n') if f.strip()]
+                    
+                    # Get directories too
+                    directories = set()
+                    for file in files:
+                        dir_path = os.path.dirname(file) if os.path.dirname(file) else '.'
+                        if dir_path != '.':
+                            # Add all parent directories
+                            parts = dir_path.split(os.sep)
+                            for i in range(len(parts)):
+                                directories.add(os.sep.join(parts[:i+1]) if i > 0 else parts[0])
+                    
+                    # Combine files and directories
+                    all_items = list(set(files) | directories)
+                    all_items.sort()
+                    
+                    log(f"処理対象: {len(all_items)}個のファイル/フォルダ")
+                    log("")
+                    
+                    updated_count = 0
+                    
+                    # Process each file/directory individually
+                    for item_path in all_items:
+                        # Get description
+                        description = file_descriptions.get(item_path, None)
+                        
+                        # If no description, generate one
+                        if not description:
+                            if item_path == '.':
+                                description = 'プロジェクトファイル'
+                            elif os.path.isdir(item_path) if os.path.exists(item_path) else item_path.endswith('/'):
+                                # It's a directory
+                                dir_name = os.path.basename(item_path) if item_path != '.' else 'プロジェクト'
+                                description = f'{dir_name}フォルダ'
+                            else:
+                                # It's a file
+                                file_name = os.path.basename(item_path)
+                                name_without_ext = os.path.splitext(file_name)[0]
+                                description = f'{name_without_ext}ファイル'
+                        
+                        # Check if this is a file or directory
+                        is_file = os.path.isfile(item_path) if os.path.exists(item_path) else item_path in files
+                        
+                        if is_file:
+                            # Process individual file
+                            log(f"処理中: {item_path}")
+                            log(f"  説明: {description}")
+                            
+                            try:
+                                cmd = ["git", "add", item_path]
+                                result = subprocess.run(cmd, capture_output=True, text=True, 
+                                                      encoding='utf-8', errors='replace')
+                                if result.returncode == 0:
+                                    log(f"  ✓ ステージング完了")
+                                else:
+                                    log(f"  ✗ ステージング失敗: {result.stderr}")
+                                    continue
+                            except Exception as e:
+                                log(f"  ✗ エラー: {e}")
+                                continue
+                            
+                            # Commit with description
+                            commit_message = description
+                            cmd = ["git", "commit", "-m", commit_message]
+                            result = subprocess.run(cmd, capture_output=True, text=True, 
+                                                  encoding='utf-8', errors='replace')
+                            
+                            if result.returncode == 0:
+                                log(f"  → コミット成功: {commit_message}")
+                                updated_count += 1
+                            else:
+                                # Check if there are changes to commit
+                                cmd = ["git", "status", "--porcelain", item_path]
+                                status_result = subprocess.run(cmd, capture_output=True, text=True, 
+                                                             encoding='utf-8', errors='replace')
+                                if not status_result.stdout.strip():
+                                    log(f"  → 変更なし（スキップ）")
+                                else:
+                                    log(f"  ✗ コミット失敗: {result.stderr}")
+                            
+                            log("")
+                        else:
+                            # Process directory - get all files in this directory
+                            dir_files = [f for f in files if f.startswith(item_path + os.sep) or f == item_path]
+                            
+                            if dir_files:
+                                log(f"処理中: {item_path}/")
+                                log(f"  説明: {description}")
+                                
+                                for file in dir_files:
+                                    try:
+                                        cmd = ["git", "add", file]
+                                        result = subprocess.run(cmd, capture_output=True, text=True, 
+                                                              encoding='utf-8', errors='replace')
+                                        if result.returncode == 0:
+                                            log(f"  ✓ {os.path.basename(file)}")
+                                        else:
+                                            log(f"  ✗ {os.path.basename(file)}: {result.stderr}")
+                                    except Exception as e:
+                                        log(f"  ✗ {os.path.basename(file)}: {e}")
+                                
+                                # Commit with description
+                                commit_message = description
+                                cmd = ["git", "commit", "-m", commit_message]
+                                result = subprocess.run(cmd, capture_output=True, text=True, 
+                                                      encoding='utf-8', errors='replace')
+                                
+                                if result.returncode == 0:
+                                    log(f"  → コミット成功: {commit_message}")
+                                    updated_count += 1
+                                else:
+                                    # Check if there are changes to commit
+                                    cmd = ["git", "status", "--porcelain"]
+                                    status_result = subprocess.run(cmd, capture_output=True, text=True, 
+                                                                 encoding='utf-8', errors='replace')
+                                    if not status_result.stdout.strip():
+                                        log(f"  → 変更なし（スキップ）")
+                                    else:
+                                        log(f"  ✗ コミット失敗: {result.stderr}")
+                                
+                                log("")
+                    
+                    log("")
+                    log("=" * 60)
+                    log(f"更新完了: {updated_count}個のコミットを作成")
+                    log("")
+                    
+                    if updated_count > 0:
+                        log("⚠️ 次のステップ:")
+                        log("GitHubにプッシュしますか？")
+                        log("")
+                        
+                        # Ask user if they want to push
+                        progress_dialog.update()
+                        response = messagebox.askyesno("確認", 
+                            f"{updated_count}個のコミットを作成しました。\n\n"
+                            "GitHubにプッシュしますか？")
+                        
+                        if response:
+                            log("")
+                            log("プッシュ中...")
+                            cmd = ["git", "push", "origin", "master"]
+                            result = subprocess.run(cmd, capture_output=True, text=True, 
+                                                  encoding='utf-8', errors='replace')
+                            
+                            if result.returncode == 0:
+                                log("✓ プッシュ成功")
+                                messagebox.showinfo("成功", "コミットメッセージを更新してプッシュしました。")
+                            else:
+                                log(f"✗ プッシュ失敗: {result.stderr}")
+                                messagebox.showerror("エラー", f"プッシュに失敗しました:\n{result.stderr}")
+                    else:
+                        log("更新するコミットはありませんでした。")
+                        messagebox.showinfo("情報", "更新するコミットはありませんでした。")
+                    
+                    # Add close button
+                    close_btn = ttk.Button(progress_dialog, text="閉じる", 
+                                          command=progress_dialog.destroy)
+                    close_btn.pack(pady=10)
+                    
+                except Exception as e:
+                    log(f"エラー: {e}")
+                    import traceback
+                    log(traceback.format_exc())
+                    messagebox.showerror("Error", f"エラーが発生しました: {e}")
+                    progress_dialog.destroy()
+            
+            # Run in background thread
+            threading.Thread(target=process_files, daemon=True).start()
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"エラーが発生しました: {e}")
 
 def main():
     root = tk.Tk()
