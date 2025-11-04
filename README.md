@@ -70,6 +70,17 @@ cd github_tools
 python github_sync.py
 ```
 
+### 5. Change History Viewer（変更履歴ビューアー）
+```bash
+# 方法1: バッチファイルから起動（推奨）
+start_history_viewer.bat
+
+# 方法2: Pythonから直接起動
+python change_history_viewer.py
+```
+
+詳細は `CHANGE_HISTORY_VIEWER_README.md` を参照してください。
+
 ## ✨ 主な機能
 
 - **マルチカメラ対応**: 複数のカメラを同時起動・選択可能
@@ -79,6 +90,7 @@ python github_sync.py
 - **アンサンブル学習**: 複数モデルの組み合わせによる高精度
 - **リアルタイム処理**: ライブカメラフィードでの即座な判定
 - **GitHub自動同期**: コード変更と学習データの自動同期
+- **変更履歴ビューアー**: Gitのコミット履歴をリアルタイムで確認できるGUIアプリ
 
 ## 📊 データ統計
 
