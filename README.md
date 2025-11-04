@@ -104,4 +104,4 @@ pip install GitPython requests
 このプロジェクトはMITライセンスの下で公開されています。
 
 
-   
+baka otu w

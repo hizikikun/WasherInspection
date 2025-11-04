@@ -258,6 +258,10 @@ setup-auto-commit.xml
 test-*.ps1
 test-file.txt
 
+# History Viewer state and config files
+.history_viewer_state.json
+.history_viewer_config.json
+
 # Organization scripts (temporary tools)
 organize_files.py
 organize_github_files.py
