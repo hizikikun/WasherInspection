@@ -140,6 +140,9 @@ class ChangeHistoryViewer:
         scan_github_btn = ttk.Button(fix_frame, text="GitHub文字化け検出", command=self.scan_github_garbled_files)
         scan_github_btn.pack(side=tk.LEFT, padx=(0, 5))
         
+        fix_file_commits_btn = ttk.Button(fix_frame, text="ファイル別コミット修正", command=self.fix_file_commit_messages)
+        fix_file_commits_btn.pack(side=tk.LEFT, padx=(0, 5))
+        
         update_commit_messages_btn = ttk.Button(fix_frame, text="コミットメッセージ更新", command=self.update_commit_messages)
         update_commit_messages_btn.pack(side=tk.LEFT)
         
@@ -2061,6 +2064,215 @@ fi
             
             # Run scan in background thread
             threading.Thread(target=scan_files, daemon=True).start()
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"エラーが発生しました: {e}")
+    
+    def fix_file_commit_messages(self):
+        """Fix commit messages for files (especially for GitHub's Last commit message display)"""
+        try:
+            os.chdir(self.project_path)
+            
+            # Show warning first
+            response = messagebox.askyesno("警告", 
+                "この機能は、各ファイルの最終コミットメッセージを修正します。\n\n"
+                "⚠️ 注意事項:\n"
+                "• Git履歴を書き換えます\n"
+                "• 既にpushされたコミットを修正するには force push が必要です\n"
+                "• 他の人と共同作業している場合は、事前に相談してください\n\n"
+                "続行しますか？")
+            
+            if not response:
+                return
+            
+            # Use common progress dialog
+            progress_dialog, log, close_btn = self.create_progress_dialog("ファイル別コミットメッセージ修正", width=800, height=700)
+            
+            def process_files():
+                try:
+                    log("=" * 60)
+                    log("ファイル別のコミットメッセージを修正中...")
+                    log("")
+                    
+                    # Get all tracked files
+                    cmd = ["git", "ls-files"]
+                    result = subprocess.run(cmd, capture_output=True, text=True, 
+                                          encoding='utf-8', errors='replace')
+                    
+                    if result.returncode != 0:
+                        log("✗ エラー: Gitリポジトリではありません")
+                        return
+                    
+                    files = [f.strip() for f in result.stdout.strip().split('\n') if f.strip()]
+                    log(f"処理対象ファイル数: {len(files)}")
+                    log("")
+                    
+                    # File descriptions mapping
+                    file_descriptions = {
+                        # Folders
+                        '.github/workflows': 'GitHub Actions ワークフロー設定',
+                        'ai_learning_analysis': 'AI学習データ分析モジュール',
+                        'backup': 'バックアップファイル',
+                        'batch_files': 'バッチファイル集',
+                        'docs': 'ドキュメント',
+                        'github_tools': 'GitHub連携ツール',
+                        'old': '旧ファイル',
+                        'resin_washer_model': '樹脂ワッシャー検査モデル',
+                        'scripts': 'スクリプト集',
+                        
+                        # Main Files
+                        'main.py': 'メイン検査システム',
+                        'camera_inspection.py': 'カメラ検査システム',
+                        'scripts/train_4class_sparse_ensemble.py': '4クラス分類学習スクリプト',
+                        'auto-commit.ps1': '自動コミットスクリプト',
+                        
+                        # Old directory files
+                        'old/camera2_inspection.py': 'カメラ検査システム（旧版）',
+                        'old/camera_simple.py': 'シンプルカメラシステム（旧版）',
+                        'old/inspection_fixed.py': '修正済み検査システム（旧版）',
+                        'old/inspection_focus.py': 'ピント調整検査システム（旧版）',
+                        'old/inspection_perfect.py': '完璧検査システム（旧版）',
+                        'old/inspection_ultra.py': '超高精度検査システム（旧版）',
+                        'old/inspection_ultra_fixed.py': '超高精度検査システム修正版（旧版）',
+                        'old/trainer_final.py': '最終学習スクリプト（旧版）',
+                    }
+                    
+                    fixed_count = 0
+                    skipped_count = 0
+                    error_count = 0
+                    
+                    for file_path in files:
+                        try:
+                            # Get description or generate one
+                            description = file_descriptions.get(file_path, None)
+                            
+                            if not description:
+                                # Generate description from filename
+                                file_name = os.path.basename(file_path)
+                                name_without_ext = os.path.splitext(file_name)[0]
+                                if file_path.startswith('old/'):
+                                    description = f'{name_without_ext}（旧版）'
+                                else:
+                                    description = f'{name_without_ext}ファイル'
+                            
+                            # Get the last commit message for this file
+                            cmd = ["git", "log", "-1", "--format=%s", "--", file_path]
+                            result = subprocess.run(cmd, capture_output=True, text=True, 
+                                                  encoding='utf-8', errors='replace')
+                            
+                            if result.returncode != 0:
+                                log(f"✗ {file_path}: コミット情報を取得できませんでした")
+                                error_count += 1
+                                continue
+                            
+                            current_message = result.stdout.strip()
+                            
+                            # Check if message is already correct
+                            if current_message == description:
+                                log(f"→ {file_path}: 既に正しいメッセージ（スキップ）")
+                                skipped_count += 1
+                                continue
+                            
+                            # Check if message is garbled
+                            is_garbled_msg = self.is_garbled(current_message)
+                            
+                            if not is_garbled_msg and current_message != description:
+                                # Not garbled but different - skip for now
+                                log(f"→ {file_path}: 文字化けしていないが異なるメッセージ（スキップ）")
+                                skipped_count += 1
+                                continue
+                            
+                            log(f"修正中: {file_path}")
+                            log(f"  現在: {current_message[:50]}...")
+                            log(f"  新しい: {description}")
+                            
+                            # Get the commit hash for this file
+                            cmd = ["git", "log", "-1", "--format=%H", "--", file_path]
+                            result = subprocess.run(cmd, capture_output=True, text=True, 
+                                                  encoding='utf-8', errors='replace')
+                            
+                            if result.returncode != 0:
+                                log(f"  ✗ コミットハッシュを取得できませんでした")
+                                error_count += 1
+                                continue
+                            
+                            commit_hash = result.stdout.strip()
+                            
+                            # Check if this is the latest commit for the entire repo
+                            cmd = ["git", "log", "-1", "--format=%H"]
+                            result = subprocess.run(cmd, capture_output=True, text=True, 
+                                                  encoding='utf-8', errors='replace')
+                            latest_commit = result.stdout.strip() if result.returncode == 0 else None
+                            
+                            if commit_hash == latest_commit:
+                                # Latest commit - use amend
+                                env = os.environ.copy()
+                                env['LANG'] = 'en_US.UTF-8'
+                                env['LC_ALL'] = 'en_US.UTF-8'
+                                
+                                cmd = ["git", "-c", "i18n.commitEncoding=utf-8", "commit", "--amend", "-m", description]
+                                result = subprocess.run(cmd, capture_output=True, text=True, 
+                                                      encoding='utf-8', errors='replace', env=env)
+                                
+                                if result.returncode == 0:
+                                    log(f"  ✓ 修正成功（amend使用）")
+                                    fixed_count += 1
+                                else:
+                                    log(f"  ✗ 修正失敗: {result.stderr}")
+                                    error_count += 1
+                            else:
+                                # Older commit - need to use filter-branch or rebase
+                                log(f"  ⚠ 古いコミットのため手動修正が必要です")
+                                log(f"    コミットハッシュ: {commit_hash[:8]}")
+                                log(f"    手動で修正: git rebase -i {commit_hash}^")
+                                skipped_count += 1
+                        
+                        except Exception as e:
+                            log(f"✗ {file_path}: エラー - {e}")
+                            error_count += 1
+                    
+                    log("")
+                    log("=" * 60)
+                    log(f"処理完了")
+                    log(f"修正成功: {fixed_count}個")
+                    log(f"スキップ: {skipped_count}個")
+                    log(f"エラー: {error_count}個")
+                    log("")
+                    
+                    if fixed_count > 0:
+                        log("⚠️ 次のステップ:")
+                        log("GitHubにプッシュしますか？")
+                        log("")
+                        
+                        # Ask user if they want to push
+                        progress_dialog.update()
+                        response = messagebox.askyesno("確認", 
+                            f"{fixed_count}個のコミットメッセージを修正しました。\n\n"
+                            "GitHubにプッシュしますか？\n\n"
+                            "⚠️ 注意: force pushが必要になります。")
+                        
+                        if response:
+                            log("")
+                            log("プッシュ中...")
+                            success, error = self.git_push("master", force=True, log_func=log)
+                            
+                            if success:
+                                messagebox.showinfo("成功", 
+                                    f"{fixed_count}個のコミットメッセージを修正してプッシュしました。")
+                            else:
+                                messagebox.showerror("エラー", f"プッシュに失敗しました:\n{error}")
+                    else:
+                        log("修正するコミットはありませんでした。")
+                        messagebox.showinfo("情報", "修正するコミットはありませんでした。")
+                    
+                except Exception as e:
+                    log(f"エラー: {e}")
+                    import traceback
+                    log(traceback.format_exc())
+                    messagebox.showerror("Error", f"エラーが発生しました: {e}")
+            
+            # Run in background thread
+            threading.Thread(target=process_files, daemon=True).start()
             
         except Exception as e:
             messagebox.showerror("Error", f"エラーが発生しました: {e}")
