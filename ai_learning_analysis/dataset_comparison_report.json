@@ -1,43 +1,43 @@
-{
-  "datasets": [
-    "実際の学習データ",
-    "基本データセット",
-    "改良データセット"
-  ],
-  "sample_counts": {
-    "実際の学習データ": 770,
-    "基本データセット": 770,
-    "改良データセット": 1080
-  },
-  "quality_comparison": {
-    "実際の学習データ": {
-      "grade": "B",
-      "consistency": 0.8878588074117822
-    },
-    "基本データセット": {
-      "grade": "B",
-      "consistency": 0.8878588074117822
-    },
-    "改良データセット": {
-      "grade": "A",
-      "consistency": 0.9420169192807227
-    }
-  },
-  "balance_comparison": {
-    "実際の学習データ": {
-      "balance_score": 0.25,
-      "is_balanced": false
-    },
-    "基本データセット": {
-      "balance_score": 0.25,
-      "is_balanced": false
-    },
-    "改良データセット": {
-      "balance_score": 0.36,
-      "is_balanced": false
-    }
-  },
-  "recommendations": [
-    "最高品質データセット: 改良データセット"
-  ]
+{
+  "datasets": [
+    "実際の学習データ",
+    "基本データセット",
+    "改良データセット"
+  ],
+  "sample_counts": {
+    "実際の学習データ": 770,
+    "基本データセット": 770,
+    "改良データセット": 1080
+  },
+  "quality_comparison": {
+    "実際の学習データ": {
+      "grade": "B",
+      "consistency": 0.8878588074117822
+    },
+    "基本データセット": {
+      "grade": "B",
+      "consistency": 0.8878588074117822
+    },
+    "改良データセット": {
+      "grade": "A",
+      "consistency": 0.9420169192807227
+    }
+  },
+  "balance_comparison": {
+    "実際の学習データ": {
+      "balance_score": 0.25,
+      "is_balanced": false
+    },
+    "基本データセット": {
+      "balance_score": 0.25,
+      "is_balanced": false
+    },
+    "改良データセット": {
+      "balance_score": 0.36,
+      "is_balanced": false
+    }
+  },
+  "recommendations": [
+    "最高品質データセット: 改良データセット"
+  ]
 }
