@@ -1366,18 +1366,68 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
                                 log("  → スキップ")
                                 continue
                         
-                        # Try to fix commit using interactive rebase
-                        # This is complex - we'll need to use git rebase -i
+                        # Try to fix commit using git rebase
                         log(f"  → 修正中...")
                         
-                        # For now, show instructions
-                        log(f"  ⚠️ 手動で修正が必要です:")
-                        log(f"     git rebase -i {commit_hash}^")
-                        log(f"     エディタで 'pick' を 'reword' に変更")
-                        log(f"     新しいメッセージ: {new_message[:50]}...")
-                        log("")
+                        try:
+                            # Get commit position
+                            cmd = ["git", "log", "--oneline", "--reverse"]
+                            result = subprocess.run(cmd, capture_output=True, text=True, 
+                                                  encoding='utf-8', errors='replace')
+                            if result.returncode != 0:
+                                log(f"  ✗ エラー: コミット履歴の取得に失敗")
+                                continue
+                            
+                            commits = result.stdout.strip().split('\n')
+                            commit_index = None
+                            for idx, line in enumerate(commits):
+                                if commit_hash[:8] in line or commit_hash in line:
+                                    commit_index = idx + 1
+                                    break
+                            
+                            if commit_index is None:
+                                log(f"  ✗ エラー: コミットが見つかりません")
+                                continue
+                            
+                            # Use git commit --amend for latest, rebase for others
+                            if commit_index == len(commits):
+                                # Latest commit - use amend
+                                cmd = ["git", "commit", "--amend", "-m", new_message]
+                                result = subprocess.run(cmd, capture_output=True, text=True, 
+                                                      encoding='utf-8', errors='replace',
+                                                      env={**os.environ, 'GIT_EDITOR': 'true'})
+                                if result.returncode == 0:
+                                    log(f"  ✓ 修正完了 (amend)")
+                                    fixed_count += 1
+                                else:
+                                    log(f"  ✗ 修正失敗: {result.stderr}")
+                            else:
+                                # Older commit - need rebase
+                                # Use GIT_SEQUENCE_EDITOR to automatically change pick to reword
+                                base_commit = f"HEAD~{len(commits) - commit_index}"
+                                
+                                # Create a script to modify the rebase todo list
+                                import tempfile
+                                with tempfile.NamedTemporaryFile(mode='w', suffix='.sh', delete=False) as f:
+                                    f.write(f'''#!/bin/sh
+sed -i "s/^pick {commit_hash[:8]}/reword {commit_hash[:8]}/" "$1"
+''')
+                                    script_path = f.name
+                                
+                                # On Windows, we need a different approach
+                                # Use git filter-branch or git rebase with environment variables
+                                log(f"  ⚠️ 古いコミットの修正には手動操作が必要です:")
+                                log(f"     1. git rebase -i {base_commit}")
+                                log(f"     2. エディタで 'pick {commit_hash[:8]}' を 'reword {commit_hash[:8]}' に変更")
+                                log(f"     3. 保存して閉じる")
+                                log(f"     4. 新しいメッセージを入力: {new_message[:50]}...")
+                                log("")
+                                # Don't count as fixed since it requires manual intervention
                         
-                        fixed_count += 1
+                        except Exception as e:
+                            log(f"  ✗ エラー: {e}")
+                            import traceback
+                            log(traceback.format_exc())
                     
                     log("")
                     log("=" * 60)
