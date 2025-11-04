@@ -106,6 +106,9 @@ class ChangeHistoryViewer:
         test_commit_btn = ttk.Button(button_frame, text="Test Commit (UTF-8)", command=self.create_test_commit)
         test_commit_btn.pack(side=tk.LEFT, padx=(0, 5))
         
+        fix_commit_btn = ttk.Button(button_frame, text="Fix Selected Commit", command=self.fix_selected_commit)
+        fix_commit_btn.pack(side=tk.LEFT, padx=(0, 5))
+        
         # Auto-commit toggle
         self.auto_commit_var = tk.BooleanVar(value=self.auto_commit_enabled)
         auto_commit_check = ttk.Checkbutton(button_frame, text="Enable Auto Commit", 
