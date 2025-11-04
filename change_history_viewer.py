@@ -2004,6 +2004,34 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
 
                     
 
+                    # Filter out files that are ignored by .gitignore
+
+                    # git ls-files returns tracked files, but some might be ignored after being tracked
+
+                    # Check each file to make sure it's not ignored
+
+                    tracked_files = []
+
+                    for file in files:
+
+                        cmd_check = ["git", "check-ignore", "-q", file]
+
+                        result_check = subprocess.run(cmd_check, capture_output=True, text=True, 
+
+                                                     encoding='utf-8', errors='replace')
+
+                        # git check-ignore returns 0 if ignored, non-zero if not ignored
+
+                        if result_check.returncode != 0:
+
+                            tracked_files.append(file)
+
+                    
+
+                    files = tracked_files
+
+                    
+
                     # Get unique directories from tracked files only
 
                     directories = set()
@@ -2156,11 +2184,47 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
 
                                 
 
+                                # Check if item is ignored by .gitignore
+
+                                cmd_check = ["git", "check-ignore", "-q", item_path]
+
+                                result_check = subprocess.run(cmd_check, capture_output=True, text=True, 
+
+                                                           encoding='utf-8', errors='replace')
+
+                                
+
+                                # git check-ignore returns 0 if the path is ignored
+
+                                if result_check.returncode == 0:
+
+                                    log(f"  → スキップ: .gitignoreによって無視されています")
+
+                                    skipped_count += 1
+
+                                    continue
+
+                                
+
                                 # Stage the item (only if it's a file or directory with tracked files)
 
                                 if item_path in files:
 
-                                    # It's a tracked file
+                                    # It's a tracked file - check if it's ignored
+
+                                    cmd_check_file = ["git", "check-ignore", "-q", item_path]
+
+                                    result_check_file = subprocess.run(cmd_check_file, capture_output=True, text=True, 
+
+                                                                     encoding='utf-8', errors='replace')
+
+                                    if result_check_file.returncode == 0:
+
+                                        log(f"  → スキップ: .gitignoreによって無視されています")
+
+                                        skipped_count += 1
+
+                                        continue
 
                                     cmd = ["git", "add", item_path]
 
@@ -2178,7 +2242,37 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
 
                                         continue
 
-                                    cmd = ["git", "add"] + dir_files
+                                    
+
+                                    # Filter out ignored files from dir_files
+
+                                    tracked_dir_files = []
+
+                                    for f in dir_files:
+
+                                        cmd_check_file = ["git", "check-ignore", "-q", f]
+
+                                        result_check_file = subprocess.run(cmd_check_file, capture_output=True, text=True, 
+
+                                                                         encoding='utf-8', errors='replace')
+
+                                        if result_check_file.returncode != 0:  # Not ignored
+
+                                            tracked_dir_files.append(f)
+
+                                    
+
+                                    if not tracked_dir_files:
+
+                                        log(f"  → スキップ: ディレクトリ内のファイルがすべて.gitignoreで無視されています")
+
+                                        skipped_count += 1
+
+                                        continue
+
+                                    
+
+                                    cmd = ["git", "add"] + tracked_dir_files
 
                                 
 
@@ -2190,7 +2284,15 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
 
                                 if result.returncode != 0:
 
-                                    log(f"  ✗ ステージング失敗: {result.stderr[:100] if result.stderr else '原因不明'}")
+                                    # Check if it's an ignore error
+
+                                    if "ignored by" in result.stderr.lower() or "gitignore" in result.stderr.lower():
+
+                                        log(f"  → スキップ: .gitignoreによって無視されています")
+
+                                    else:
+
+                                        log(f"  ✗ ステージング失敗: {result.stderr[:100] if result.stderr else '原因不明'}")
 
                                     skipped_count += 1
 
@@ -2254,59 +2356,75 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
 
                     if fixed_count > 0:
 
-                        log("⚠️ 次のステップ:")
+                        log("")
 
-                        log("GitHubにプッシュしますか？")
+                        log("=" * 60)
+
+                        log("修正完了。GitHubにプッシュします...")
 
                         log("")
 
                         
 
-                        # Ask user if they want to push
+                        # Automatically push to GitHub
+
+                        env = os.environ.copy()
+
+                        env['LANG'] = 'en_US.UTF-8'
+
+                        env['LC_ALL'] = 'en_US.UTF-8'
+
+                        
+
+                        # Try to push (force push may be needed)
+
+                        log("プッシュ中...")
 
                         progress_dialog.update()
 
                         
 
-                        response = messagebox.askyesno("確認", 
-
-                            f"{fixed_count}個のコミットメッセージを修正しました。\n\n"
-
-                            "GitHubにプッシュしますか？\n\n"
-
-                            "⚠️ 注意: force pushが必要になる場合があります。")
+                        success, error = self.git_push("master", force=True, log_func=log)
 
                         
 
-                        if response:
+                        if success:
 
                             log("")
 
-                            log("プッシュ中...")
+                            log("=" * 60)
 
-                            
+                            log("✓ プッシュ成功！")
 
-                            env = os.environ.copy()
+                            log(f"{fixed_count}個のコミットメッセージを修正してGitHubにプッシュしました。")
 
-                            env['LANG'] = 'en_US.UTF-8'
+                            messagebox.showinfo("成功", 
 
-                            env['LC_ALL'] = 'en_US.UTF-8'
+                                f"{fixed_count}個のコミットメッセージを修正してGitHubにプッシュしました。")
 
-                            
+                        else:
 
-                            success, error = self.git_push("master", force=True, log_func=log)
+                            log("")
 
-                            
+                            log("=" * 60)
 
-                            if success:
+                            log("✗ プッシュ失敗")
 
-                                messagebox.showinfo("成功", 
+                            log(f"エラー: {error}")
 
-                                    f"{fixed_count}個のコミットメッセージを修正してプッシュしました。")
+                            log("")
 
-                            else:
+                            log("手動でプッシュしてください:")
 
-                                messagebox.showerror("エラー", f"プッシュに失敗しました:\n{error}")
+                            log("  git push origin master --force")
+
+                            messagebox.showwarning("警告", 
+
+                                f"プッシュに失敗しました:\n{error}\n\n"
+
+                                "手動でプッシュしてください:\n"
+
+                                "git push origin master --force")
 
                     else:
 
