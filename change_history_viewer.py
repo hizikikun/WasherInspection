@@ -4208,9 +4208,13 @@ fi
 
                     
 
-                    files = [f.strip() for f in result.stdout.strip().split('\n') if f.strip()]
+                    all_files = [f.strip() for f in result.stdout.strip().split('\n') if f.strip()]
+                    
+                    # Filter to .py files only, excluding image files
+                    image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.tif', '.webp', '.svg', '.ico']
+                    files = [f for f in all_files if f.endswith('.py') and not any(f.lower().endswith(ext) for ext in image_extensions)]
 
-                    log(f"処理対象ファイル数: {len(files)}")
+                    log(f"処理対象ファイル数: {len(files)} (.pyファイルのみ、画像ファイルは除外)")
 
                     log("")
 
