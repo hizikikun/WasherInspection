@@ -103,5 +103,4 @@ pip install GitPython requests
 
 このプロジェクトはMITライセンスの下で公開されています。
 
-文字化けしていないよ
 
