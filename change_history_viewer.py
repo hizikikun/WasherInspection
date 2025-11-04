@@ -135,7 +135,10 @@ class ChangeHistoryViewer:
         fix_all_commits_btn.pack(side=tk.LEFT, padx=(0, 5))
         
         reupload_all_btn = ttk.Button(fix_frame, text="全ファイル再アップロード", command=self.reupload_all_files)
-        reupload_all_btn.pack(side=tk.LEFT)
+        reupload_all_btn.pack(side=tk.LEFT, padx=(0, 5))
+        
+        update_commit_messages_btn = ttk.Button(fix_frame, text="コミットメッセージ更新", command=self.update_commit_messages)
+        update_commit_messages_btn.pack(side=tk.LEFT)
         
         # Commit list
         list_frame = ttk.LabelFrame(main_frame, text="Recent Commits", padding="5")
