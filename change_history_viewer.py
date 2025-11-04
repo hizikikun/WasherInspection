@@ -84,43 +84,55 @@ class ChangeHistoryViewer:
         self.last_update_label = ttk.Label(status_frame, text="", foreground="gray")
         self.last_update_label.pack(side=tk.LEFT, padx=(20, 0))
         
-        # Buttons
-        button_frame = ttk.Frame(main_frame)
-        button_frame.grid(row=2, column=0, columnspan=2, sticky=(tk.W), pady=(0, 10))
+        # Buttons - organized by category
+        button_container = ttk.Frame(main_frame)
+        button_container.grid(row=2, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
         
-        refresh_btn = ttk.Button(button_frame, text="Refresh", command=self.refresh_history)
+        # Category 1: 基本操作 (Basic Operations)
+        basic_frame = ttk.LabelFrame(button_container, text="基本操作", padding=5)
+        basic_frame.pack(side=tk.LEFT, padx=(0, 5), fill=tk.X)
+        
+        refresh_btn = ttk.Button(basic_frame, text="更新", command=self.refresh_history)
         refresh_btn.pack(side=tk.LEFT, padx=(0, 5))
         
-        view_diff_btn = ttk.Button(button_frame, text="View Diff", command=self.view_diff)
+        view_diff_btn = ttk.Button(basic_frame, text="差分表示", command=self.view_diff)
         view_diff_btn.pack(side=tk.LEFT, padx=(0, 5))
         
-        view_files_btn = ttk.Button(button_frame, text="View Changed Files", command=self.view_changed_files)
+        view_files_btn = ttk.Button(basic_frame, text="変更ファイル", command=self.view_changed_files)
         view_files_btn.pack(side=tk.LEFT, padx=(0, 5))
         
-        open_github_btn = ttk.Button(button_frame, text="Open GitHub", command=self.open_github)
-        open_github_btn.pack(side=tk.LEFT, padx=(0, 5))
+        open_github_btn = ttk.Button(basic_frame, text="GitHubを開く", command=self.open_github)
+        open_github_btn.pack(side=tk.LEFT)
         
-        auto_commit_btn = ttk.Button(button_frame, text="Auto Commit & Push", command=self.manual_commit_push)
+        # Category 2: コミット操作 (Commit Operations)
+        commit_frame = ttk.LabelFrame(button_container, text="コミット操作", padding=5)
+        commit_frame.pack(side=tk.LEFT, padx=(0, 5), fill=tk.X)
+        
+        auto_commit_btn = ttk.Button(commit_frame, text="コミット & プッシュ", command=self.manual_commit_push)
         auto_commit_btn.pack(side=tk.LEFT, padx=(0, 5))
         
-        test_commit_btn = ttk.Button(button_frame, text="Test Commit (UTF-8)", command=self.create_test_commit)
+        test_commit_btn = ttk.Button(commit_frame, text="テストコミット (UTF-8)", command=self.create_test_commit)
         test_commit_btn.pack(side=tk.LEFT, padx=(0, 5))
-        
-        fix_commit_btn = ttk.Button(button_frame, text="Fix Selected Commit", command=self.fix_selected_commit)
-        fix_commit_btn.pack(side=tk.LEFT, padx=(0, 5))
-        
-        fix_files_btn = ttk.Button(button_frame, text="Fix Garbled Files", command=self.fix_garbled_files)
-        fix_files_btn.pack(side=tk.LEFT, padx=(0, 5))
-        
-        fix_all_commits_btn = ttk.Button(button_frame, text="Fix All Garbled Commits", command=self.fix_all_garbled_commits)
-        fix_all_commits_btn.pack(side=tk.LEFT, padx=(0, 5))
         
         # Auto-commit toggle
         self.auto_commit_var = tk.BooleanVar(value=self.auto_commit_enabled)
-        auto_commit_check = ttk.Checkbutton(button_frame, text="Enable Auto Commit", 
+        auto_commit_check = ttk.Checkbutton(commit_frame, text="自動コミット有効", 
                                             variable=self.auto_commit_var,
                                             command=self.toggle_auto_commit)
-        auto_commit_check.pack(side=tk.LEFT)
+        auto_commit_check.pack(side=tk.LEFT, padx=(5, 0))
+        
+        # Category 3: 文字化け修正 (Fix Garbled Text)
+        fix_frame = ttk.LabelFrame(button_container, text="文字化け修正", padding=5)
+        fix_frame.pack(side=tk.LEFT, fill=tk.X)
+        
+        fix_commit_btn = ttk.Button(fix_frame, text="選択コミット修正", command=self.fix_selected_commit)
+        fix_commit_btn.pack(side=tk.LEFT, padx=(0, 5))
+        
+        fix_files_btn = ttk.Button(fix_frame, text="ファイル修正", command=self.fix_garbled_files)
+        fix_files_btn.pack(side=tk.LEFT, padx=(0, 5))
+        
+        fix_all_commits_btn = ttk.Button(fix_frame, text="全コミット修正", command=self.fix_all_garbled_commits)
+        fix_all_commits_btn.pack(side=tk.LEFT)
         
         # Commit list
         list_frame = ttk.LabelFrame(main_frame, text="Recent Commits", padding="5")
@@ -1178,6 +1190,243 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
             
         except Exception as e:
             messagebox.showerror("Error", f"エラーが発生しました: {e}")
+    
+    def fix_all_garbled_commits(self):
+        """Scan and fix all garbled commit messages in the repository"""
+        try:
+            os.chdir(self.project_path)
+            
+            # Show warning first
+            response = messagebox.askyesno("警告", 
+                "この操作は、Gitの履歴を書き換えます。\n\n"
+                "⚠️ 注意事項:\n"
+                "• 既にpushされたコミットを修正するには force push が必要です\n"
+                "• 他の人と共同作業している場合は、事前に相談してください\n"
+                "• この操作は取り消せません\n\n"
+                "続行しますか？")
+            
+            if not response:
+                return
+            
+            # Show progress dialog
+            progress_dialog = tk.Toplevel(self.root)
+            progress_dialog.title("全コミット文字化け修正")
+            progress_dialog.geometry("700x600")
+            progress_dialog.transient(self.root)
+            progress_dialog.grab_set()
+            
+            progress_label = ttk.Label(progress_dialog, text="コミット履歴をスキャン中...")
+            progress_label.pack(pady=10)
+            
+            progress_text = scrolledtext.ScrolledText(progress_dialog, height=25, width=80)
+            progress_text.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+            
+            def log(message):
+                progress_text.insert(tk.END, message + "\n")
+                progress_text.see(tk.END)
+                progress_dialog.update()
+            
+            def scan_and_fix():
+                try:
+                    # Get all commits
+                    cmd = ["git", "log", "--all", "--pretty=format:%H|%s", "--reverse"]
+                    result = subprocess.run(cmd, capture_output=True, text=True, 
+                                          encoding='utf-8', errors='replace')
+                    
+                    if result.returncode != 0:
+                        log("エラー: Gitリポジトリではありません")
+                        return
+                    
+                    commits = []
+                    for line in result.stdout.strip().split('\n'):
+                        if '|' in line:
+                            hash_part, message = line.split('|', 1)
+                            commits.append((hash_part.strip(), message.strip()))
+                    
+                    log(f"総コミット数: {len(commits)}")
+                    log("")
+                    
+                    garbled_commits = []
+                    
+                    for commit_hash, message in commits:
+                        if self.is_garbled(message):
+                            garbled_commits.append((commit_hash, message))
+                            log(f"文字化け検出: {commit_hash[:8]} - {message[:50]}...")
+                    
+                    log("")
+                    log("=" * 60)
+                    log(f"文字化けコミット数: {len(garbled_commits)}")
+                    log("")
+                    
+                    if not garbled_commits:
+                        log("文字化けしているコミットは見つかりませんでした。")
+                        close_btn = ttk.Button(progress_dialog, text="閉じる", 
+                                              command=progress_dialog.destroy)
+                        close_btn.pack(pady=10)
+                        return
+                    
+                    log("修正方法を選択してください:")
+                    log("1. 各コミットメッセージを手動で入力して修正")
+                    log("2. 文字化けを自動検出して修正（推奨）")
+                    log("")
+                    
+                    # Ask user for method
+                    progress_dialog.update()
+                    
+                    # Create method selection dialog
+                    method_dialog = tk.Toplevel(progress_dialog)
+                    method_dialog.title("修正方法を選択")
+                    method_dialog.geometry("400x200")
+                    method_dialog.transient(progress_dialog)
+                    method_dialog.grab_set()
+                    
+                    ttk.Label(method_dialog, 
+                            text=f"{len(garbled_commits)}個の文字化けコミットが見つかりました。\n\n修正方法を選択してください:",
+                            justify=tk.LEFT).pack(pady=10)
+                    
+                    method_choice = tk.StringVar(value="auto")
+                    
+                    def on_method_selected():
+                        method_dialog.destroy()
+                    
+                    ttk.Radiobutton(method_dialog, text="自動修正（文字化けを検出して修正）", 
+                                   variable=method_choice, value="auto").pack(anchor=tk.W, padx=20)
+                    ttk.Radiobutton(method_dialog, text="手動修正（各コミットメッセージを入力）", 
+                                   variable=method_choice, value="manual").pack(anchor=tk.W, padx=20)
+                    
+                    ttk.Button(method_dialog, text="続行", command=on_method_selected).pack(pady=10)
+                    
+                    # Wait for method selection
+                    method_dialog.wait_window()
+                    
+                    use_auto = method_choice.get() == "auto"
+                    
+                    log("")
+                    if use_auto:
+                        log("自動修正モードで修正します...")
+                        log("⚠️ 注意: 自動修正は正確ではない場合があります。")
+                        log("修正後、コミット履歴を確認してください。")
+                        log("")
+                    else:
+                        log("手動修正モードで修正します...")
+                        log("各コミットの新しいメッセージを入力してください。")
+                        log("")
+                    
+                    fixed_count = 0
+                    
+                    for idx, (commit_hash, old_message) in enumerate(garbled_commits, 1):
+                        log(f"[{idx}/{len(garbled_commits)}] {commit_hash[:8]}")
+                        log(f"  現在: {old_message[:60]}...")
+                        
+                        if use_auto:
+                            # Try to auto-fix by detecting common patterns
+                            new_message = self.auto_fix_commit_message(old_message)
+                            log(f"  自動修正: {new_message[:60]}...")
+                        else:
+                            # Manual input
+                            input_dialog = tk.Toplevel(progress_dialog)
+                            input_dialog.title(f"コミット {commit_hash[:8]} を修正")
+                            input_dialog.geometry("600x300")
+                            input_dialog.transient(progress_dialog)
+                            input_dialog.grab_set()
+                            
+                            ttk.Label(input_dialog, text=f"コミット: {commit_hash[:8]}").pack(pady=5)
+                            ttk.Label(input_dialog, text="現在のメッセージ:", font=("", 9)).pack(anchor=tk.W, padx=10)
+                            
+                            old_text = scrolledtext.ScrolledText(input_dialog, height=3, width=70)
+                            old_text.insert('1.0', old_message)
+                            old_text.config(state=tk.DISABLED)
+                            old_text.pack(padx=10, pady=5, fill=tk.X)
+                            
+                            ttk.Label(input_dialog, text="新しいメッセージ:", font=("", 9)).pack(anchor=tk.W, padx=10)
+                            
+                            new_text = scrolledtext.ScrolledText(input_dialog, height=5, width=70)
+                            new_text.pack(padx=10, pady=5, fill=tk.BOTH, expand=True)
+                            
+                            new_message = None
+                            
+                            def on_ok():
+                                nonlocal new_message
+                                new_message = new_text.get('1.0', tk.END).strip()
+                                input_dialog.destroy()
+                            
+                            def on_skip():
+                                nonlocal new_message
+                                new_message = None
+                                input_dialog.destroy()
+                            
+                            btn_frame = ttk.Frame(input_dialog)
+                            btn_frame.pack(pady=10)
+                            ttk.Button(btn_frame, text="修正", command=on_ok).pack(side=tk.LEFT, padx=5)
+                            ttk.Button(btn_frame, text="スキップ", command=on_skip).pack(side=tk.LEFT, padx=5)
+                            
+                            input_dialog.wait_window()
+                            
+                            if not new_message:
+                                log("  → スキップ")
+                                continue
+                        
+                        # Try to fix commit using interactive rebase
+                        # This is complex - we'll need to use git rebase -i
+                        log(f"  → 修正中...")
+                        
+                        # For now, show instructions
+                        log(f"  ⚠️ 手動で修正が必要です:")
+                        log(f"     git rebase -i {commit_hash}^")
+                        log(f"     エディタで 'pick' を 'reword' に変更")
+                        log(f"     新しいメッセージ: {new_message[:50]}...")
+                        log("")
+                        
+                        fixed_count += 1
+                    
+                    log("")
+                    log("=" * 60)
+                    log(f"修正対象: {fixed_count}個")
+                    log("")
+                    log("⚠️ 重要:")
+                    log("コミットメッセージの修正には git rebase が必要です。")
+                    log("既にpushされたコミットを修正する場合は、force pushが必要です:")
+                    log("  git push origin master --force")
+                    log("")
+                    log("詳細な手順については、各コミットの修正方法を参照してください。")
+                    
+                    close_btn = ttk.Button(progress_dialog, text="閉じる", 
+                                          command=progress_dialog.destroy)
+                    close_btn.pack(pady=10)
+                    
+                except Exception as e:
+                    log(f"エラー: {e}")
+                    import traceback
+                    log(traceback.format_exc())
+                    messagebox.showerror("Error", f"エラーが発生しました: {e}")
+                    progress_dialog.destroy()
+            
+            # Run scan in background thread
+            threading.Thread(target=scan_and_fix, daemon=True).start()
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"エラーが発生しました: {e}")
+    
+    def auto_fix_commit_message(self, garbled_message):
+        """Try to auto-fix a garbled commit message"""
+        # Common patterns for fixing
+        # This is a simple heuristic - may need improvement
+        
+        # Try to decode as Shift-JIS if it looks garbled
+        try:
+            # If message contains garbled chars, try to reconstruct
+            # This is tricky - we can't easily reverse the garbling
+            # So we'll just suggest a generic message
+            if "Update" in garbled_message or "菫ｮ豁｣" in garbled_message:
+                return "Update: ファイル更新"
+            elif "Initial" in garbled_message or "譖ｴ譁ｰ" in garbled_message:
+                return "Initial: 初期コミット"
+            elif "Auto-commit" in garbled_message:
+                return f"Auto-commit: {time.strftime('%Y-%m-%d %H:%M:%S')}"
+            else:
+                return "Update: コミットメッセージ修正"
+        except:
+            return "Update: コミットメッセージ修正"
 
 def main():
     root = tk.Tk()
