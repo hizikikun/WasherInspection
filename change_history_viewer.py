@@ -1370,8 +1370,21 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
                         log(f"  → 修正中...")
                         
                         try:
+                            # First, verify the commit exists
+                            cmd = ["git", "cat-file", "-e", commit_hash]
+                            result = subprocess.run(cmd, capture_output=True, text=True, 
+                                                  encoding='utf-8', errors='replace')
+                            if result.returncode != 0:
+                                # Try with short hash
+                                cmd = ["git", "cat-file", "-e", commit_hash[:8]]
+                                result = subprocess.run(cmd, capture_output=True, text=True, 
+                                                      encoding='utf-8', errors='replace')
+                                if result.returncode != 0:
+                                    log(f"  ✗ エラー: コミットが見つかりません (ハッシュ: {commit_hash[:8]})")
+                                    continue
+                            
                             # Get commit position
-                            cmd = ["git", "log", "--oneline", "--reverse"]
+                            cmd = ["git", "log", "--oneline", "--all", "--reverse"]
                             result = subprocess.run(cmd, capture_output=True, text=True, 
                                                   encoding='utf-8', errors='replace')
                             if result.returncode != 0:
@@ -1381,12 +1394,14 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
                             commits = result.stdout.strip().split('\n')
                             commit_index = None
                             for idx, line in enumerate(commits):
-                                if commit_hash[:8] in line or commit_hash in line:
+                                # Check both full hash and short hash
+                                if commit_hash in line or commit_hash[:8] in line.split()[0]:
                                     commit_index = idx + 1
                                     break
                             
                             if commit_index is None:
-                                log(f"  ✗ エラー: コミットが見つかりません")
+                                log(f"  ✗ エラー: コミットが見つかりません (ハッシュ: {commit_hash[:8]})")
+                                log(f"     ヒント: このコミットは別のブランチにある可能性があります")
                                 continue
                             
                             # Use git commit --amend for latest, rebase for others
@@ -1402,27 +1417,60 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
                                 else:
                                     log(f"  ✗ 修正失敗: {result.stderr}")
                             else:
-                                # Older commit - need rebase
-                                # Use GIT_SEQUENCE_EDITOR to automatically change pick to reword
-                                base_commit = f"HEAD~{len(commits) - commit_index}"
+                                # Older commit - try to use git filter-branch or rebase
+                                # For Windows, we'll use git filter-branch with a script
+                                log(f"  → 古いコミットの修正を試行中...")
                                 
-                                # Create a script to modify the rebase todo list
+                                # Try using git filter-branch with --msg-filter
+                                # This is safer than rebase for automation
                                 import tempfile
-                                with tempfile.NamedTemporaryFile(mode='w', suffix='.sh', delete=False) as f:
-                                    f.write(f'''#!/bin/sh
-sed -i "s/^pick {commit_hash[:8]}/reword {commit_hash[:8]}/" "$1"
-''')
-                                    script_path = f.name
+                                import os
                                 
-                                # On Windows, we need a different approach
-                                # Use git filter-branch or git rebase with environment variables
-                                log(f"  ⚠️ 古いコミットの修正には手動操作が必要です:")
-                                log(f"     1. git rebase -i {base_commit}")
-                                log(f"     2. エディタで 'pick {commit_hash[:8]}' を 'reword {commit_hash[:8]}' に変更")
-                                log(f"     3. 保存して閉じる")
-                                log(f"     4. 新しいメッセージを入力: {new_message[:50]}...")
-                                log("")
-                                # Don't count as fixed since it requires manual intervention
+                                # Create a script that will be used by git filter-branch
+                                filter_script = f'''if [ "$GIT_COMMIT" = "{commit_hash}" ]; then
+    echo "{new_message}"
+else
+    cat
+fi
+'''
+                                
+                                with tempfile.NamedTemporaryFile(mode='w', suffix='.sh', delete=False, encoding='utf-8') as f:
+                                    f.write(filter_script)
+                                    filter_script_path = f.name
+                                
+                                try:
+                                    # On Windows, we need to use git filter-branch or git rebase
+                                    # Let's try a simpler approach: use git rebase with environment variables
+                                    # But first, save the script path
+                                    os.chmod(filter_script_path, 0o755)
+                                    
+                                    # For now, provide manual instructions but with better details
+                                    log(f"  ⚠️ 古いコミットの修正には手動操作が必要です:")
+                                    log(f"     方法1: git rebase -i を使用")
+                                    log(f"     1. git rebase -i {commit_hash}^")
+                                    log(f"     2. エディタで 'pick {commit_hash[:8]}' を 'reword {commit_hash[:8]}' に変更")
+                                    log(f"     3. 保存して閉じる")
+                                    log(f"     4. 新しいメッセージを入力: {new_message}")
+                                    log(f"")
+                                    log(f"     方法2: git filter-branch を使用（上級者向け）")
+                                    log(f"     git filter-branch -f --msg-filter '")
+                                    log(f"       if [ \"$GIT_COMMIT\" = \"{commit_hash}\" ]; then")
+                                    log(f"         echo \"{new_message}\"")
+                                    log(f"       else")
+                                    log(f"         cat")
+                                    log(f"       fi")
+                                    log(f"     ' HEAD")
+                                    log("")
+                                    
+                                    # Count as manual intervention needed
+                                    # Don't increment fixed_count
+                                    
+                                finally:
+                                    # Clean up temp file
+                                    try:
+                                        os.unlink(filter_script_path)
+                                    except:
+                                        pass
                         
                         except Exception as e:
                             log(f"  ✗ エラー: {e}")
