@@ -102,3 +102,6 @@ pip install GitPython requests
 ## 📝 ライセンス
 
 このプロジェクトはMITライセンスの下で公開されています。
+
+
+## Update: ����GitHub�A�g�e�X�g ()
