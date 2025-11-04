@@ -105,4 +105,4 @@ pip install GitPython requests
 
 
    
-   Test2: Auto-commit test at $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+   Tes3: Auto-commit test at $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
