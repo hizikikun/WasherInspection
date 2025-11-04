@@ -2004,7 +2004,7 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
 
                     
 
-                    # Get directories too
+                    # Get unique directories from tracked files only
 
                     directories = set()
 
@@ -2018,13 +2018,19 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
 
                             for i in range(len(parts)):
 
-                                directories.add(os.sep.join(parts[:i+1]) if i > 0 else parts[0])
+                                dir_part = os.sep.join(parts[:i+1]) if i > 0 else parts[0]
+
+                                # Only add if this directory contains tracked files
+
+                                if any(f.startswith(dir_part + os.sep) or f == dir_part for f in files):
+
+                                    directories.add(dir_part)
 
                     
 
-                    # Combine files and directories
+                    # Combine files and directories, but prioritize files
 
-                    all_items = list(set(files) | directories)
+                    all_items = files + [d for d in sorted(directories) if d not in files]
 
                     all_items.sort()
 
@@ -2134,9 +2140,47 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
 
                                 
 
-                                # Stage the item
+                                # Check if item exists or is tracked by Git
 
-                                cmd = ["git", "add", item_path]
+                                is_tracked = item_path in files or any(f.startswith(item_path + os.sep) for f in files)
+
+                                
+
+                                if not is_tracked and not os.path.exists(item_path):
+
+                                    log(f"  → スキップ: ファイル/フォルダが存在しないか、Gitで管理されていません")
+
+                                    skipped_count += 1
+
+                                    continue
+
+                                
+
+                                # Stage the item (only if it's a file or directory with tracked files)
+
+                                if item_path in files:
+
+                                    # It's a tracked file
+
+                                    cmd = ["git", "add", item_path]
+
+                                else:
+
+                                    # It's a directory - stage all files in it
+
+                                    dir_files = [f for f in files if f.startswith(item_path + os.sep) or f == item_path]
+
+                                    if not dir_files:
+
+                                        log(f"  → スキップ: ディレクトリ内にGitで管理されているファイルがありません")
+
+                                        skipped_count += 1
+
+                                        continue
+
+                                    cmd = ["git", "add"] + dir_files
+
+                                
 
                                 result = subprocess.run(cmd, capture_output=True, text=True, 
 
@@ -2146,7 +2190,9 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
 
                                 if result.returncode != 0:
 
-                                    log(f"  ✗ ステージング失敗")
+                                    log(f"  ✗ ステージング失敗: {result.stderr[:100] if result.stderr else '原因不明'}")
+
+                                    skipped_count += 1
 
                                     continue
 
