@@ -1431,14 +1431,46 @@ sed -i "s/^pick {commit_hash[:8]}/reword {commit_hash[:8]}/" "$1"
                     
                     log("")
                     log("=" * 60)
-                    log(f"修正対象: {fixed_count}個")
+                    log(f"修正完了: {fixed_count}個")
                     log("")
-                    log("⚠️ 重要:")
-                    log("コミットメッセージの修正には git rebase が必要です。")
-                    log("既にpushされたコミットを修正する場合は、force pushが必要です:")
-                    log("  git push origin master --force")
-                    log("")
-                    log("詳細な手順については、各コミットの修正方法を参照してください。")
+                    
+                    if fixed_count > 0:
+                        log("⚠️ 次のステップ:")
+                        log("1. 修正したコミットを確認してください")
+                        log("2. 既にpushされたコミットを修正した場合は、force pushが必要です:")
+                        log("   git push origin master --force")
+                        log("")
+                        log("⚠️ 警告: force pushは他の人と共同作業している場合は危険です。")
+                        log("   事前にチームメンバーに相談してください。")
+                        log("")
+                        
+                        # Ask if user wants to push
+                        progress_dialog.update()
+                        response = messagebox.askyesno("確認", 
+                            f"{fixed_count}個のコミットを修正しました。\n\n"
+                            "GitHubにプッシュしますか？\n\n"
+                            "⚠️ 注意: force pushが必要な場合があります。")
+                        
+                        if response:
+                            log("")
+                            log("プッシュ中...")
+                            cmd = ["git", "push", "origin", "master", "--force"]
+                            result = subprocess.run(cmd, capture_output=True, text=True, 
+                                                  encoding='utf-8', errors='replace')
+                            
+                            if result.returncode == 0:
+                                log("✓ プッシュ成功")
+                                messagebox.showinfo("成功", "コミットを修正してプッシュしました。")
+                            else:
+                                log(f"✗ プッシュ失敗: {result.stderr}")
+                                messagebox.showerror("エラー", f"プッシュに失敗しました:\n{result.stderr}")
+                    else:
+                        log("⚠️ 重要:")
+                        log("古いコミットの修正には手動でgit rebaseが必要です。")
+                        log("既にpushされたコミットを修正する場合は、force pushが必要です:")
+                        log("  git push origin master --force")
+                        log("")
+                        log("詳細な手順については、上記の各コミットの修正方法を参照してください。")
                     
                     close_btn = ttk.Button(progress_dialog, text="閉じる", 
                                           command=progress_dialog.destroy)
