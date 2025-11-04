@@ -2,11 +2,10 @@
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
-param(
-  [int]$QuietSeconds = 60,
-  [int]$LargeDiffLines = 100,
-  [int]$LargeDiffFiles = 3
-)
+# Parameters
+$QuietSeconds = 60
+$LargeDiffLines = 100
+$LargeDiffFiles = 3
 
 # Move to script directory
 $here = $PSScriptRoot
