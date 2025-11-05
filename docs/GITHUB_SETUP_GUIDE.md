@@ -174,4 +174,4 @@ python github_washer_inspection_system.py
 {
   "include_images": false
 }
-```
+```
