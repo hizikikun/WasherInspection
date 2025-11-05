@@ -11,4 +11,4 @@ timeout /t 2 /nobreak >nul
 echo Auto-commit script started in background.
 echo Check auto-commit.log for status.
 pause
-
+
