@@ -26,4 +26,4 @@ websockets==12.0
 asyncio-mqtt==0.16.1
 
 # Optional: For better performance
-# tensorflow-gpu==2.15.0  # Uncomment if you have CUDA support
+# tensorflow-gpu==2.15.0  # Uncomment if you have CUDA support
