@@ -1960,6 +1960,22 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
 
                 'start_history_viewer.bat': '履歴ビューアー起動バッチ',
 
+                
+
+                # JSON files
+
+                'ai_learning_analysis/dataset_comparison_report.json': 'データセット比較レポート',
+
+                'ai_learning_analysis/基本データセット_analysis_report.json': '基本データセット分析レポート',
+
+                'ai_learning_analysis/実際の学習データ_analysis_report.json': '実際の学習データ分析レポート',
+
+                'ai_learning_analysis/改良データセット_analysis_report.json': '改良データセット分析レポート',
+
+                'feedback_data.json': 'フィードバックデータ',
+
+                'resin_washer_model/training_history.json': '学習履歴データ',
+
             }
 
             
@@ -2318,6 +2334,7 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
                                             ends_with_newline = text_content.endswith('\n')
                                             
                                             # Add or remove trailing newline
+                                            # This works for all text files including JSON
                                             if ends_with_newline:
                                                 # Remove trailing newline
                                                 new_content = text_content.rstrip('\n')
