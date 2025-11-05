@@ -2300,8 +2300,83 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
 
                                 
 
-                                # Create commit with description (allow empty if no changes)
+                                # Make a small change to the file to ensure GitHub updates the "Last commit message"
+                                # Add or remove a trailing newline to make an actual file change
+                                file_changed = False
+                                
+                                if item_path in files and os.path.isfile(item_path):
+                                    try:
+                                        # Read the file
+                                        with open(item_path, 'rb') as f:
+                                            content = f.read()
+                                        
+                                        # Try to decode as text
+                                        try:
+                                            text_content = content.decode('utf-8')
+                                            
+                                            # Check if file ends with newline
+                                            ends_with_newline = text_content.endswith('\n')
+                                            
+                                            # Add or remove trailing newline
+                                            if ends_with_newline:
+                                                # Remove trailing newline
+                                                new_content = text_content.rstrip('\n')
+                                            else:
+                                                # Add trailing newline
+                                                new_content = text_content + '\n'
+                                            
+                                            # Only write if content actually changed
+                                            if new_content != text_content:
+                                                with open(item_path, 'w', encoding='utf-8', newline='') as f:
+                                                    f.write(new_content)
+                                                file_changed = True
+                                                log(f"  → ファイルを変更しました（末尾の改行を調整）")
+                                        except UnicodeDecodeError:
+                                            # Binary file - skip modification
+                                            log(f"  → バイナリファイルのため変更をスキップ")
+                                    except Exception as e:
+                                        log(f"  → ファイル変更エラー: {e}")
+                                
+                                # If it's a directory, modify a file inside it
+                                elif item_path not in files:
+                                    # Find first text file in directory
+                                    dir_files = [f for f in tracked_dir_files if os.path.isfile(f)]
+                                    for dir_file in dir_files[:1]:  # Only modify first file
+                                        try:
+                                            with open(dir_file, 'rb') as f:
+                                                content = f.read()
+                                            
+                                            try:
+                                                text_content = content.decode('utf-8')
+                                                ends_with_newline = text_content.endswith('\n')
+                                                
+                                                if ends_with_newline:
+                                                    new_content = text_content.rstrip('\n')
+                                                else:
+                                                    new_content = text_content + '\n'
+                                                
+                                                if new_content != text_content:
+                                                    with open(dir_file, 'w', encoding='utf-8', newline='') as f:
+                                                        f.write(new_content)
+                                                    file_changed = True
+                                                    log(f"  → {dir_file}を変更しました（末尾の改行を調整）")
+                                                    break
+                                            except UnicodeDecodeError:
+                                                continue
+                                        except Exception as e:
+                                            continue
 
+                                # Stage the changes again (in case file was modified)
+                                if file_changed:
+                                    if item_path in files:
+                                        cmd = ["git", "add", item_path]
+                                    else:
+                                        cmd = ["git", "add"] + tracked_dir_files
+                                    
+                                    subprocess.run(cmd, capture_output=True, text=True,
+                                                 encoding='utf-8', errors='replace')
+
+                                # Create commit with description
                                 env = os.environ.copy()
 
                                 env['LANG'] = 'en_US.UTF-8'
@@ -2312,7 +2387,7 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
 
                                 cmd = ["git", "-c", "i18n.commitEncoding=utf-8", "commit", 
 
-                                       "--allow-empty", "-m", description]
+                                       "-m", description]
 
                                 result = subprocess.run(cmd, capture_output=True, text=True, 
 
