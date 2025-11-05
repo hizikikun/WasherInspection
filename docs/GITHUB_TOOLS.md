@@ -109,4 +109,4 @@ github_tools/
 - `training_data_manager.py`が参照されていますが、ファイルの場所を確認してください
 - 設定ファイル（`*.json`）は`config/`ディレクトリに移動されています
 - バッチファイル（`*.bat`）は`batch_files/`ディレクトリにあります
-
+
