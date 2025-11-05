@@ -127,4 +127,4 @@ if __name__ == "__main__":
     else:
         print("\n" + "=" * 60)
         print("まず画像データを準備してください")
-        print("=" * 60)
+        print("=" * 60)
