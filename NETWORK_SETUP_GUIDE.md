@@ -113,4 +113,4 @@ python network_washer_inspection_system.py auto
 [CLIENT] Connecting to server at ws://192.168.1.100:8765
 [CLIENT] Connected to server
 [CLIENT] Received inspection result: good (0.85)
-```
+```
