@@ -191,4 +191,4 @@ while ($true) {
     Write-Warning $exceptionMsg
     $exceptionMsg | Out-File -FilePath $logFile -Append -Encoding UTF8
   }
-}
+}
