@@ -209,4 +209,4 @@ self.classes = ['good', 'chipping', 'black_spot', 'scratch', 'your_custom_class'
 def send_notification(self, message):
     # Slack、Discord、メール等の通知を実装
     pass
-```
+```
