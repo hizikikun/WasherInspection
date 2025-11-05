@@ -245,4 +245,4 @@ python cursor_github_integration.py --token YOUR_TOKEN
 ### 履歴管理
 - 送受信履歴の保存
 - 操作ログの検索
-- エラー履歴の追跡
+- エラー履歴の追跡
