@@ -210,4 +210,4 @@ def main():
         print("Please try the manual method or install GitHub CLI.")
 
 if __name__ == "__main__":
-    main()
+    main()
