@@ -51,4 +51,4 @@ def create_dummy_model():
     return model
 
 if __name__ == "__main__":
-    create_dummy_model()
+    create_dummy_model()
