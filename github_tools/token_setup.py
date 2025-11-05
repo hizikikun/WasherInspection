@@ -227,4 +227,4 @@ def main():
         print("Please try again or create the token manually.")
 
 if __name__ == "__main__":
-    main()
+    main()
