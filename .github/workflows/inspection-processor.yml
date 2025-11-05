@@ -88,4 +88,4 @@ This report is automatically generated daily." \
         # You can add webhook notifications here
         # curl -X POST -H 'Content-type: application/json' \
         #   --data '{"text":"NG inspection detected: ${{ github.event.issue.title }}"}' \
-        #   ${{ secrets.SLACK_WEBHOOK_URL }}
+        #   ${{ secrets.SLACK_WEBHOOK_URL }}
