@@ -422,4 +422,4 @@ def main():
         sync_system.run_auto_sync()
 
 if __name__ == "__main__":
-    main()
+    main()
