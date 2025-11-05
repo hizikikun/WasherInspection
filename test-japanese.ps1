@@ -17,4 +17,4 @@ $testMsg | Out-File -FilePath $logFile -Append -Encoding UTF8
 Write-Host "ログファイルに書き込みました: $logFile"
 
 
-
+
