@@ -2201,40 +2201,24 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
                                 
 
                                 # Check if item is ignored by .gitignore
-
-                                cmd_check = ["git", "check-ignore", "-q", item_path]
-
-                                result_check = subprocess.run(cmd_check, capture_output=True, text=True, 
-
-                                                           encoding='utf-8', errors='replace')
-
-                                
-
-                                # git check-ignore returns 0 if the path is ignored
-
-                                if result_check.returncode == 0:
-
-                                    log(f"  → スキップ: .gitignoreによって無視されています")
-
-                                    skipped_count += 1
-
-                                    continue
-
-                                
-
-                                # Stage the item (only if it's a file or directory with tracked files)
-
+                                # But only skip if it's not already tracked by Git
+                                # Files already tracked will be processed even if they match .gitignore patterns
                                 if item_path in files:
+                                    # This file is tracked, so process it even if .gitignore matches
+                                    pass
+                                else:
+                                    # For directories or non-tracked files, check .gitignore
+                                    cmd_check = ["git", "check-ignore", "-q", item_path]
 
-                                    # It's a tracked file - check if it's ignored
+                                    result_check = subprocess.run(cmd_check, capture_output=True, text=True, 
 
-                                    cmd_check_file = ["git", "check-ignore", "-q", item_path]
+                                                               encoding='utf-8', errors='replace')
 
-                                    result_check_file = subprocess.run(cmd_check_file, capture_output=True, text=True, 
+                                    
 
-                                                                     encoding='utf-8', errors='replace')
+                                    # git check-ignore returns 0 if the path is ignored
 
-                                    if result_check_file.returncode == 0:
+                                    if result_check.returncode == 0:
 
                                         log(f"  → スキップ: .gitignoreによって無視されています")
 
@@ -2242,6 +2226,14 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
 
                                         continue
 
+                                
+
+                                # Stage the item (only if it's a file or directory with tracked files)
+
+                                if item_path in files:
+
+                                    # It's a tracked file - process it even if .gitignore matches
+                                    # Files already tracked should be processed
                                     cmd = ["git", "add", item_path]
 
                                 else:
@@ -2260,27 +2252,14 @@ This file is for testing UTF-8 encoding to ensure no garbled characters.
 
                                     
 
-                                    # Filter out ignored files from dir_files
-
-                                    tracked_dir_files = []
-
-                                    for f in dir_files:
-
-                                        cmd_check_file = ["git", "check-ignore", "-q", f]
-
-                                        result_check_file = subprocess.run(cmd_check_file, capture_output=True, text=True, 
-
-                                                                         encoding='utf-8', errors='replace')
-
-                                        if result_check_file.returncode != 0:  # Not ignored
-
-                                            tracked_dir_files.append(f)
-
-                                    
+                                    # dir_files contains only tracked files (from git ls-files)
+                                    # So we should process all of them, even if .gitignore matches
+                                    # Files already tracked should be processed
+                                    tracked_dir_files = dir_files
 
                                     if not tracked_dir_files:
 
-                                        log(f"  → スキップ: ディレクトリ内のファイルがすべて.gitignoreで無視されています")
+                                        log(f"  → スキップ: ディレクトリ内にGitで管理されているファイルがありません")
 
                                         skipped_count += 1
 
