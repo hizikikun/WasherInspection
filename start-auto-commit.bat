@@ -8,4 +8,4 @@ echo.
 cd /d "%~dp0"
 powershell -ExecutionPolicy Bypass -Command "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; & '.\auto-commit.ps1'"
 
-pause
+pause
