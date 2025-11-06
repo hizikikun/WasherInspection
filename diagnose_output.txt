@@ -1,0 +1,36 @@
+﻿隴ｦ蜻・ psutil縺後う繝ｳ繧ｹ繝医・繝ｫ縺輔ｌ縺ｦ縺・∪縺帙ｓ縲８indows API縺ｧ繧ｷ繧ｹ繝・Β諠・ｱ繧貞叙蠕励＠縺ｾ縺吶・
+  [OK] 繧｢繝励Μ繧ｱ繝ｼ繧ｷ繝ｧ繝ｳ繝輔ぃ繧､繝ｫ OK
+
+[4] QApplication縺ｮ菴懈・...
+  [OK] QApplication菴懈・ OK
+
+[5] 繧ｦ繧｣繝ｳ繝峨え縺ｮ菴懈・...
+[OK] 繝ｭ繧ｴ繧｢繧､繧ｳ繝ｳ險ｭ螳壼ｮ御ｺ・ C:\Users\tomoh\WasherInspection\assets\logo_icon.ico
+[DEBUG] psutil not available - will use Windows API instead
+隴ｦ蜻・ psutil縺後↑縺・◆繧√仝indows API縺ｧ繧ｷ繧ｹ繝・Β諠・ｱ繧貞叙蠕励＠縺ｾ縺吶・
+[DEBUG] CPU detected via wmic: AMD Ryzen 9 7900 12-Core Processor
+[DEBUG] CPU cores from env: 24
+[DEBUG] System Specs Detected:
+  Memory: 63.1030158996582GB
+  VRAM: 11.994140625GB
+  CPU Cores (Logical): 24
+  CPU Cores (Physical): 12
+[DEBUG] Final System Specs - Memory: 63.1030158996582GB, VRAM: 11.994140625GB, CPU Cores (Logical): 24, CPU Cores (Physical): 12
+[DEBUG] 笨・怛笨・High-end condition 1 met: Memory 63.1030158996582GB >= 48GB -> Ultra-high performance
+[DEBUG] 笨・怛笨・ULTRA-HIGH PERFORMANCE RECOMMENDED! Index: 4
+[DEBUG] Quick combo set to index 4: 5. 雜・ｫ俶ｧ閭ｽ・亥ｮ滄ｨ鍋噪・・- Batch: 96, Workers: 24 箝先耳螂ｨ
+  [OK] 繧ｦ繧｣繝ｳ繝峨え菴懈・ OK
+
+[6] 繧ｦ繧｣繝ｳ繝峨え縺ｮ陦ｨ遉ｺ...
+  [OK] 繧ｦ繧｣繝ｳ繝峨え陦ｨ遉ｺ OK
+
+============================================================
+險ｺ譁ｭ螳御ｺ・ 繧｢繝励Μ繧ｱ繝ｼ繧ｷ繝ｧ繝ｳ繧定ｵｷ蜍輔＠縺ｾ縺励◆
+============================================================
+
+繧ｦ繧｣繝ｳ繝峨え縺瑚｡ｨ遉ｺ縺輔ｌ縺ｦ縺・ｋ縺ｯ縺壹〒縺吶・
+髢峨§繧九↓縺ｯ繧ｦ繧｣繝ｳ繝峨え繧帝哩縺倥ｋ縺九，trl+C繧呈款縺励※縺上□縺輔＞縲・
+
+[ERROR] psutil not available: No module named 'psutil'
+[ERROR] psutil not available: No module named 'psutil'
+[ERROR] psutil not available: No module named 'psutil'
