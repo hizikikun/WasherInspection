@@ -257,6 +257,9 @@ Thumbs.db
 *.swp
 *.swo
 
+# SpecStory auto-save files
+.specstory/
+
 # Large files and directories
 
 cs_AItraining_data/**
