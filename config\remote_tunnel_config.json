@@ -1,0 +1,18 @@
+{
+  "tunnel_method": "ngrok",
+  "local_port": 5000,
+  "ngrok": {
+    "enabled": true,
+    "auth_token": "352bQlsW33MThSORn2ElKZySIqT_At1ZFNLtKBZJAS4yW7Zw",
+    "region": "jp",
+    "subdomain": ""
+  },
+  "cloudflare": {
+    "enabled": false,
+    "tunnel_token": ""
+  },
+  "custom_tunnel": {
+    "enabled": false,
+    "command": ""
+  }
+}
