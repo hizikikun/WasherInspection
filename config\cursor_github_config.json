@@ -1,0 +1,26 @@
+{
+  "github_token": "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",
+  "github_owner": "hizikikun",
+  "github_repo": "WasherInspection",
+  "auto_sync_enabled": true,
+  "sync_interval": 60,
+  "auto_commit_threshold": 3,
+  "one_click_enabled": true,
+  "notifications_enabled": true,
+  "include_files": [
+    ".py",
+    ".json",
+    ".md",
+    ".yml",
+    ".yaml",
+    ".txt",
+    ".csv"
+  ],
+  "exclude_dirs": [
+    "__pycache__",
+    ".git",
+    "node_modules",
+    ".vscode",
+    "backup"
+  ]
+}
