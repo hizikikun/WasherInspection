@@ -1,0 +1,462 @@
+﻿============================================================
+アプリ起動テスト - エラー詳細取得
+============================================================
+
+[1] PyQt5のインポート...
+python : Traceback (most recent call last):
+発生場所 C:\Users\tomoh\AppData\Local\Temp\ps-script-1135e7ee-cdc6-48a1-9e6b-c0e12aa0b6ed.ps1:90 文字:1
++ python test_app_startup.py 2>&1 | Out-File -Encoding UTF8 app_error_l ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\Users\tomoh\WasherInspection\test_app_startup.py", line 20, in <module>
+    print("  \u2713 PyQt5 OK")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2713' in position 2: illegal multibyte sequence
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\test_app_startup.py", line 22, in <module>
+    print(f"  \u2717 PyQt5エラー: {e}")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2717' in position 2: illegal multibyte sequence
+
+============================================================
+アプリケーション起動エラー発生時刻: 2025-11-05 03:57:31
+============================================================
+エラー型: UnicodeEncodeError
+エラーメッセージ: 'cp932' codec can't encode character '\u2705' in position 607: illegal multibyte sequence
+トレースバック:
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 731, in __init__
+    self.setup_ui()
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 1293, in setup_ui
+    self.training_tab = self.create_training_tab()
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 2455, in create_training_tab
+    print(f"[DEBUG] ✅✅✅ High-end condition 1 met: Memory {memory_gb}GB >= 48GB -> Ultra-high performance")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 8: illegal multibyte sequence
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 7819, in main
+    window = IntegratedWasherApp()
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 735, in __init__
+    print(f"[ERROR] {error_msg}")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 606: illegal multibyte sequence
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 7824, in main
+    print(f"[ERROR] {error_msg}")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 607: illegal multibyte sequence
+
+============================================================
+
+
+============================================================
+未処理例外発生時刻: 2025-11-05 03:57:31
+============================================================
+例外型: UnicodeEncodeError
+例外メッセージ: 'cp932' codec can't encode character '\u2705' in position 619: illegal multibyte sequence
+トレースバック:
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 731, in __init__
+    self.setup_ui()
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 1293, in setup_ui
+    self.training_tab = self.create_training_tab()
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 2455, in create_training_tab
+    print(f"[DEBUG] ✅✅✅ High-end condition 1 met: Memory {memory_gb}GB >= 48GB -> Ultra-high performance")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 8: illegal multibyte sequence
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 7819, in main
+    window = IntegratedWasherApp()
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 735, in __init__
+    print(f"[ERROR] {error_msg}")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 606: illegal multibyte sequence
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 7824, in main
+    print(f"[ERROR] {error_msg}")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 607: illegal multibyte sequence
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 8044, in <module>
+    main()
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 7902, in main
+    print(f"[CRITICAL ERROR] {error_msg}")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 619: illegal multibyte sequence
+
+============================================================
+
+
+============================================================
+アプリケーション起動エラー発生時刻: 2025-11-05 03:58:00
+============================================================
+エラー型: UnicodeEncodeError
+エラーメッセージ: 'cp932' codec can't encode character '\u2705' in position 607: illegal multibyte sequence
+トレースバック:
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 731, in __init__
+    self.setup_ui()
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 1293, in setup_ui
+    self.training_tab = self.create_training_tab()
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 2455, in create_training_tab
+    print(f"[DEBUG] ✅✅✅ High-end condition 1 met: Memory {memory_gb}GB >= 48GB -> Ultra-high performance")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 8: illegal multibyte sequence
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 7819, in main
+    window = IntegratedWasherApp()
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 735, in __init__
+    print(f"[ERROR] {error_msg}")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 606: illegal multibyte sequence
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 7824, in main
+    print(f"[ERROR] {error_msg}")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 607: illegal multibyte sequence
+
+============================================================
+
+
+============================================================
+未処理例外発生時刻: 2025-11-05 03:58:00
+============================================================
+例外型: UnicodeEncodeError
+例外メッセージ: 'cp932' codec can't encode character '\u2705' in position 619: illegal multibyte sequence
+トレースバック:
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 731, in __init__
+    self.setup_ui()
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 1293, in setup_ui
+    self.training_tab = self.create_training_tab()
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 2455, in create_training_tab
+    print(f"[DEBUG] ✅✅✅ High-end condition 1 met: Memory {memory_gb}GB >= 48GB -> Ultra-high performance")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 8: illegal multibyte sequence
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 7819, in main
+    window = IntegratedWasherApp()
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 735, in __init__
+    print(f"[ERROR] {error_msg}")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 606: illegal multibyte sequence
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 7824, in main
+    print(f"[ERROR] {error_msg}")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 607: illegal multibyte sequence
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 8044, in <module>
+    main()
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 7902, in main
+    print(f"[CRITICAL ERROR] {error_msg}")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 619: illegal multibyte sequence
+
+============================================================
+
+
+============================================================
+アプリケーション起動エラー発生時刻: 2025-11-05 03:59:41
+============================================================
+エラー型: UnicodeEncodeError
+エラーメッセージ: 'cp932' codec can't encode character '\u2705' in position 607: illegal multibyte sequence
+トレースバック:
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 731, in __init__
+    self.setup_ui()
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 1293, in setup_ui
+    self.training_tab = self.create_training_tab()
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 2455, in create_training_tab
+    print(f"[DEBUG] ✅✅✅ High-end condition 1 met: Memory {memory_gb}GB >= 48GB -> Ultra-high performance")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 8: illegal multibyte sequence
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 7840, in main
+    window = IntegratedWasherApp()
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 735, in __init__
+    print(f"[ERROR] {error_msg}")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 606: illegal multibyte sequence
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 7845, in main
+    print(f"[ERROR] {error_msg}")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 607: illegal multibyte sequence
+
+============================================================
+
+
+============================================================
+未処理例外発生時刻: 2025-11-05 03:59:42
+============================================================
+例外型: UnicodeEncodeError
+例外メッセージ: 'cp932' codec can't encode character '\u2705' in position 619: illegal multibyte sequence
+トレースバック:
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 731, in __init__
+    self.setup_ui()
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 1293, in setup_ui
+    self.training_tab = self.create_training_tab()
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 2455, in create_training_tab
+    print(f"[DEBUG] ✅✅✅ High-end condition 1 met: Memory {memory_gb}GB >= 48GB -> Ultra-high performance")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 8: illegal multibyte sequence
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 7840, in main
+    window = IntegratedWasherApp()
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 735, in __init__
+    print(f"[ERROR] {error_msg}")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 606: illegal multibyte sequence
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 7845, in main
+    print(f"[ERROR] {error_msg}")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 607: illegal multibyte sequence
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 8065, in <module>
+    main()
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 7923, in main
+    print(f"[CRITICAL ERROR] {error_msg}")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 619: illegal multibyte sequence
+
+============================================================
+
+
+============================================================
+アプリケーション起動エラー発生時刻: 2025-11-05 04:00:16
+============================================================
+エラー型: UnicodeEncodeError
+エラーメッセージ: 'cp932' codec can't encode character '\u2705' in position 607: illegal multibyte sequence
+トレースバック:
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 731, in __init__
+    self.setup_ui()
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 1293, in setup_ui
+    self.training_tab = self.create_training_tab()
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 2455, in create_training_tab
+    print(f"[DEBUG] ✅✅✅ High-end condition 1 met: Memory {memory_gb}GB >= 48GB -> Ultra-high performance")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 8: illegal multibyte sequence
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 7840, in main
+    window = IntegratedWasherApp()
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 735, in __init__
+    print(f"[ERROR] {error_msg}")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 606: illegal multibyte sequence
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 7845, in main
+    print(f"[ERROR] {error_msg}")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 607: illegal multibyte sequence
+
+============================================================
+
+
+============================================================
+未処理例外発生時刻: 2025-11-05 04:00:16
+============================================================
+例外型: UnicodeEncodeError
+例外メッセージ: 'cp932' codec can't encode character '\u2705' in position 619: illegal multibyte sequence
+トレースバック:
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 731, in __init__
+    self.setup_ui()
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 1293, in setup_ui
+    self.training_tab = self.create_training_tab()
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 2455, in create_training_tab
+    print(f"[DEBUG] ✅✅✅ High-end condition 1 met: Memory {memory_gb}GB >= 48GB -> Ultra-high performance")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 8: illegal multibyte sequence
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 7840, in main
+    window = IntegratedWasherApp()
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 735, in __init__
+    print(f"[ERROR] {error_msg}")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 606: illegal multibyte sequence
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 7845, in main
+    print(f"[ERROR] {error_msg}")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 607: illegal multibyte sequence
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 8065, in <module>
+    main()
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 7923, in main
+    print(f"[CRITICAL ERROR] {error_msg}")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2705' in position 619: illegal multibyte sequence
+
+============================================================
+
+
+============================================================
+UIセットアップエラー: 2025-11-05 04:01:22
+============================================================
+UIセットアップエラー: 'cp932' codec can't encode character '\u2b50' in position 74: illegal multibyte sequence
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 731, in __init__
+    self.setup_ui()
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 1293, in setup_ui
+    self.training_tab = self.create_training_tab()
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 2537, in create_training_tab
+    print(f"[DEBUG] Quick combo set to index {recommended_index}: {quick_items[recommended_index]}")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2b50' in position 74: illegal multibyte sequence
+
+============================================================
+
+
+============================================================
+ウィンドウ作成エラー発生時刻: 2025-11-05 04:01:22
+============================================================
+ウィンドウ作成エラー: 'cp932' codec can't encode character '\u2b50' in position 74: illegal multibyte sequence
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 7840, in main
+    window = IntegratedWasherApp()
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 731, in __init__
+    self.setup_ui()
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 1293, in setup_ui
+    self.training_tab = self.create_training_tab()
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 2537, in create_training_tab
+    print(f"[DEBUG] Quick combo set to index {recommended_index}: {quick_items[recommended_index]}")
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2b50' in position 74: illegal multibyte sequence
+
+============================================================
+
+
+============================================================
+UIセットアップエラー: 2025-11-05 04:02:51
+============================================================
+UIセットアップエラー: 'cp932' codec can't encode character '\u2b50' in position 74: illegal multibyte sequence
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 731, in __init__
+    self.setup_ui()
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 1293, in setup_ui
+    self.training_tab = self.create_training_tab()
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 2537, in create_training_tab
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2b50' in position 74: illegal multibyte sequence
+
+============================================================
+
+
+============================================================
+ウィンドウ作成エラー発生時刻: 2025-11-05 04:02:51
+============================================================
+ウィンドウ作成エラー: 'cp932' codec can't encode character '\u2b50' in position 74: illegal multibyte sequence
+
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 7873, in main
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 731, in __init__
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 1293, in setup_ui
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 2537, in create_training_tab
+UnicodeEncodeError: 'cp932' codec can't encode character '\u2b50' in position 74: illegal multibyte sequence
+
+============================================================
+
+
+============================================================
+未処理例外発生時刻: 2025-11-05 04:07:40
+============================================================
+例外型: AttributeError
+例外メッセージ: 'NoneType' object has no attribute 'setChecked'
+トレースバック:
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 5986, in save_settings
+    self.alert_enabled_checkbox.setChecked(alert_enabled_checkbox.isChecked())
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'setChecked'
+
+============================================================
+
+
+============================================================
+未処理例外発生時刻: 2025-11-05 04:11:05
+============================================================
+例外型: AttributeError
+例外メッセージ: 'NoneType' object has no attribute 'setChecked'
+トレースバック:
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 6015, in save_settings
+    self.alert_enabled_checkbox.setChecked(alert_enabled_checkbox.isChecked())
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'setChecked'
+
+============================================================
+
+
+============================================================
+未処理例外発生時刻: 2025-11-05 04:16:34
+============================================================
+例外型: AttributeError
+例外メッセージ: 'NoneType' object has no attribute 'setChecked'
+トレースバック:
+Traceback (most recent call last):
+  File "C:\Users\tomoh\WasherInspection\dashboard\integrated_washer_app.py", line 6144, in save_settings
+    self.alert_enabled_checkbox.setChecked(alert_enabled_checkbox.isChecked())
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'setChecked'
+
+============================================================
+
