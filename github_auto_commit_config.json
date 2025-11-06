@@ -1,0 +1,28 @@
+{
+  "github_token": "",
+  "github_owner": "your-username",
+  "github_repo": "washer-inspection-code",
+  "code_path": ".",
+  "backup_path": "backup",
+  "commit_threshold": 5,
+  "size_threshold": 1048576,
+  "time_threshold": 300,
+  "auto_commit": true,
+  "include_code_files": [
+    ".py",
+    ".json",
+    ".md",
+    ".yml",
+    ".yaml",
+    ".txt"
+  ],
+  "exclude_dirs": [
+    "__pycache__",
+    ".git",
+    "node_modules",
+    ".vscode",
+    "backup"
+  ],
+  "commit_message_template": "Auto-commit: {change_count} files changed",
+  "branch": "main"
+}
