@@ -210,6 +210,7 @@ dist/
 # Virtual environment
 .venv/
 venv/
+venv_wsl2/
 
 # Large data directories
 cs_AItraining_data/

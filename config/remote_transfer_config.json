@@ -1,0 +1,25 @@
+{
+  "enabled": false,
+  "transfer_method": "network_share",
+  "remote_pc": {
+    "hostname": "192.168.1.100",
+    "username": "",
+    "password": "",
+    "share_path": "\\\\192.168.1.100\\WasherInspection",
+    "target_folder": "remote_models"
+  },
+  "transfer_items": {
+    "models": true,
+    "checkpoints": true,
+    "logs": true,
+    "config": true,
+    "training_history": true
+  },
+  "auto_transfer_on_complete": true,
+  "compress_before_transfer": true
+}
+
+
+
+
+
