@@ -1526,7 +1526,7 @@ class ChangeHistoryViewer:
 
     
 
-    def git_push(self, branch="master", force=False, log_func=None):
+    def git_push(self, branch="master", force=False, log_func=None, use_upstream=False):
 
         """Git push操作の共通処理"""
 
@@ -1534,7 +1534,13 @@ class ChangeHistoryViewer:
 
             os.chdir(self.project_path)
 
-            cmd = ["git", "push", "origin", branch]
+            if use_upstream:
+
+                cmd = ["git", "push", "-u", "origin", branch]
+
+            else:
+
+                cmd = ["git", "push", "origin", branch]
 
             if force:
 
@@ -1625,11 +1631,6 @@ class ChangeHistoryViewer:
         try:
             os.chdir(self.project_path)
             
-            # Get current branch name
-            cmd = ["git", "branch", "--show-current"]
-            result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace')
-            current_branch = result.stdout.strip() or "master"
-            
             # Check if remote exists
             cmd = ["git", "remote", "-v"]
             result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace')
@@ -1637,52 +1638,62 @@ class ChangeHistoryViewer:
                 messagebox.showerror("エラー", "リモートリポジトリが設定されていません。\nまずリモートリポジトリを追加してください。")
                 return
             
-            # Try to push to current branch first
-            branches_to_try = [current_branch]
-            if current_branch == "master":
-                branches_to_try.append("main")
-            elif current_branch == "main":
-                branches_to_try.append("master")
+            # Get current branch name
+            cmd = ["git", "branch", "--show-current"]
+            result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace')
+            current_branch = result.stdout.strip()
             
-            pushed = False
-            error_messages = []
+            if not current_branch:
+                messagebox.showerror("エラー", "現在のブランチを取得できませんでした。")
+                return
             
-            for branch in branches_to_try:
-                # Check if there are commits to push (ignore error if remote branch doesn't exist)
-                cmd = ["git", "log", f"origin/{branch}..HEAD", "--oneline"]
-                result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace')
+            # Get remote branches
+            cmd = ["git", "branch", "-r"]
+            result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace')
+            remote_branches = []
+            for line in result.stdout.strip().split('\n'):
+                if line.strip() and '->' not in line:
+                    branch_name = line.strip().replace('origin/', '').strip()
+                    if branch_name:
+                        remote_branches.append(branch_name)
+            
+            # Check if remote branch exists
+            remote_branch_exists = current_branch in remote_branches
+            
+            # Try to push with -u flag if remote branch doesn't exist (first push)
+            use_upstream = not remote_branch_exists
+            
+            # Push to current branch
+            success, error_msg = self.git_push(current_branch, force=False, use_upstream=use_upstream)
+            
+            if success:
+                messagebox.showinfo("成功", f"コミットをGitHubにプッシュしました。\nブランチ: {current_branch}")
+                self.refresh_history()
+            else:
+                # If current branch failed, try alternative branch names
+                branches_to_try = []
+                if current_branch == "master":
+                    branches_to_try.append("main")
+                elif current_branch == "main":
+                    branches_to_try.append("master")
                 
-                # If command succeeded and there are commits, or if remote branch doesn't exist (first push)
-                if result.returncode == 0:
-                    if result.stdout.strip():
-                        # There are commits to push
-                        success, error_msg = self.git_push(branch, force=False)
-                        if success:
-                            messagebox.showinfo("成功", f"コミットをGitHubにプッシュしました。\nブランチ: {branch}")
-                            self.refresh_history()
-                            pushed = True
-                            break
-                        else:
-                            error_messages.append(f"{branch}: {error_msg}")
-                    else:
-                        # No commits to push for this branch
-                        continue
-                else:
-                    # Remote branch might not exist, try to push anyway
-                    success, error_msg = self.git_push(branch, force=False)
+                pushed = False
+                for alt_branch in branches_to_try:
+                    alt_remote_exists = alt_branch in remote_branches
+                    use_upstream = not alt_remote_exists
+                    success, error_msg = self.git_push(alt_branch, force=False, use_upstream=use_upstream)
                     if success:
-                        messagebox.showinfo("成功", f"コミットをGitHubにプッシュしました。\nブランチ: {branch}")
+                        messagebox.showinfo("成功", f"コミットをGitHubにプッシュしました。\nブランチ: {alt_branch}")
                         self.refresh_history()
                         pushed = True
                         break
-                    else:
-                        error_messages.append(f"{branch}: {error_msg}")
-            
-            if not pushed:
-                if error_messages:
-                    messagebox.showerror("エラー", f"プッシュに失敗しました:\n\n" + "\n".join(error_messages))
-                else:
-                    messagebox.showinfo("情報", "プッシュするコミットがありません。\nすべてのコミットは既にGitHubにプッシュされています。")
+                
+                if not pushed:
+                    messagebox.showerror("エラー", f"プッシュに失敗しました:\n\n{current_branch}: {error_msg}\n\n" +
+                                       "解決方法:\n" +
+                                       "1. リモートブランチが存在するか確認: git branch -r\n" +
+                                       "2. 初めてpushする場合: git push -u origin " + current_branch + "\n" +
+                                       "3. ブランチ名を確認: git branch")
                 
         except Exception as e:
             messagebox.showerror("エラー", f"エラーが発生しました:\n{str(e)}")
