@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHubへのPush手順ガイド</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Meiryo', sans-serif;
+            line-height: 1.8;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+        }
+        h3 {
+            color: #555;
+            margin-top: 20px;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: #e74c3c;
+        }
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border-left: 4px solid #3498db;
+        }
+        pre code {
+            background: none;
+            color: #ecf0f1;
+            padding: 0;
+        }
+        .step {
+            background: #ecf0f1;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .error {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        ul, ol {
+            margin: 10px 0;
+            padding-left: 30px;
+        }
+        li {
+            margin: 8px 0;
+        }
+        .command-box {
+            background: #34495e;
+            color: #ecf0f1;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        .emoji {
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 GitHubへのPush手順ガイド</h1>
+        <p>久しぶりにGitHubにpushする際の、わかりやすい手順をまとめました。</p>
+
+        <h2>📋 基本的なPush手順</h2>
+
+        <div class="step">
+            <h3>ステップ1: 現在の状態を確認</h3>
+            <p>まず、変更があるかどうかを確認します：</p>
+            <pre><code>git status</code></pre>
+            <p><strong>表示される内容：</strong></p>
+            <ul>
+                <li><code>Changes not staged for commit</code>: 変更されたファイルがある（まだステージングされていない）</li>
+                <li><code>Changes to be committed</code>: ステージング済みのファイルがある</li>
+                <li><code>nothing to commit, working tree clean</code>: 変更なし</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h3>ステップ2: 変更をステージング（追加）</h3>
+            <p>変更したファイルをGitに追加します：</p>
+            <pre><code># すべての変更を追加
+git add .
+
+# または、特定のファイルだけ追加
+git add ファイル名</code></pre>
+            <p><strong>確認方法：</strong></p>
+            <pre><code>git status</code></pre>
+            <p>→ <code>Changes to be committed</code> に表示されていればOK</p>
+        </div>
+
+        <div class="step">
+            <h3>ステップ3: コミット（変更を記録）</h3>
+            <p>変更内容をコミットメッセージと一緒に記録します：</p>
+            <pre><code>git commit -m "変更内容の説明"</code></pre>
+            <p><strong>コミットメッセージの例：</strong></p>
+            <ul>
+                <li><code>"機能追加: 新しい機能を実装"</code></li>
+                <li><code>"バグ修正: エラーを修正"</code></li>
+                <li><code>"更新: ドキュメントを更新"</code></li>
+                <li><code>"リファクタリング: コードを整理"</code></li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h3>ステップ4: GitHubにPush（アップロード）</h3>
+            <p>ローカルの変更をGitHubに送信します：</p>
+            <pre><code># メインブランチが 'main' の場合
+git push origin main
+
+# メインブランチが 'master' の場合
+git push origin master</code></pre>
+            <p><strong>ブランチ名の確認方法：</strong></p>
+            <pre><code>git branch</code></pre>
+            <p>→ 現在のブランチ名が <code>*</code> で表示されます</p>
+        </div>
+
+        <h2>🎯 よくあるシナリオ</h2>
+
+        <h3>シナリオ1: 初めてPushする場合</h3>
+        <ol>
+            <li><strong>リモートリポジトリが設定されているか確認</strong>
+                <pre><code>git remote -v</code></pre>
+                <p>→ 何も表示されない場合は、リモートリポジトリを追加する必要があります</p>
+            </li>
+            <li><strong>リモートリポジトリを追加</strong>（GitHubでリポジトリを作成済みの場合）
+                <pre><code>git remote add origin https://github.com/ユーザー名/リポジトリ名.git</code></pre>
+            </li>
+            <li><strong>通常のPush手順を実行</strong></li>
+        </ol>
+
+        <h3>シナリオ2: エラーが出た場合</h3>
+
+        <div class="error">
+            <h4>エラー: "Updates were rejected"</h4>
+            <p><strong>原因：</strong> GitHubの方が新しい変更を持っている</p>
+            <p><strong>解決方法：</strong></p>
+            <pre><code># 1. まずGitHubの最新版を取得
+git pull origin main
+
+# 2. 競合があれば解決してから
+git add .
+git commit -m "マージ: GitHubの変更を取り込み"
+
+# 3. 再度Push
+git push origin main</code></pre>
+        </div>
+
+        <div class="error">
+            <h4>エラー: "Authentication failed"</h4>
+            <p><strong>原因：</strong> GitHubへの認証情報が正しくない</p>
+            <p><strong>解決方法：</strong></p>
+            <ol>
+                <li>Personal Access Token (PAT) を使用する</li>
+                <li>GitHubでトークンを生成：
+                    <ul>
+                        <li>Settings → Developer settings → Personal access tokens → Tokens (classic)</li>
+                        <li><code>repo</code> 権限を付与</li>
+                    </ul>
+                </li>
+                <li>Push時にトークンをパスワードとして入力</li>
+            </ol>
+        </div>
+
+        <div class="error">
+            <h4>エラー: "Branch not found"</h4>
+            <p><strong>原因：</strong> ブランチ名が間違っている</p>
+            <p><strong>解決方法：</strong></p>
+            <pre><code># 現在のブランチ名を確認
+git branch
+
+# 正しいブランチ名でPush
+git push origin ブランチ名</code></pre>
+        </div>
+
+        <h2>🚀 簡単な方法（GUIアプリ使用）</h2>
+        <div class="success">
+            <p>プロジェクトには <code>change_history_viewer.py</code> というGUIアプリがあります：</p>
+            <ol>
+                <li><strong>アプリを起動</strong>
+                    <pre><code>python change_history_viewer.py</code></pre>
+                </li>
+                <li><strong>「コミット＆プッシュ」ボタンをクリック</strong>
+                    <ul>
+                        <li>自動的に変更を検出</li>
+                        <li>ステージング</li>
+                        <li>コミット</li>
+                        <li>Push</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <h2>📝 コマンド一覧（まとめ）</h2>
+        <div class="command-box">
+# 1. 状態確認<br>
+git status<br><br>
+# 2. 変更を追加<br>
+git add .<br><br>
+# 3. コミット<br>
+git commit -m "変更内容"<br><br>
+# 4. Push<br>
+git push origin main
+        </div>
+
+        <p><strong>すべて一度に実行（変更がある場合のみ）：</strong></p>
+        <pre><code>git add . && git commit -m "更新" && git push origin main</code></pre>
+
+        <h2>⚠️ 注意事項</h2>
+        <div class="warning">
+            <ol>
+                <li><strong>コミットメッセージはわかりやすく</strong>
+                    <ul>
+                        <li>何を変更したかが分かるように</li>
+                        <li>日本語でもOK</li>
+                    </ul>
+                </li>
+                <li><strong>Push前に確認</strong>
+                    <ul>
+                        <li><code>git status</code> で変更内容を確認</li>
+                        <li>間違ったファイルを追加していないか確認</li>
+                    </ul>
+                </li>
+                <li><strong>重要な変更はバックアップ</strong>
+                    <ul>
+                        <li>Push前に重要なファイルはバックアップを取る</li>
+                    </ul>
+                </li>
+                <li><strong>共同作業の場合</strong>
+                    <ul>
+                        <li>Push前に <code>git pull</code> で最新版を取得</li>
+                        <li>競合を解決してからPush</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <h2>🔍 トラブルシューティング</h2>
+
+        <h3>変更が表示されない</h3>
+        <pre><code># .gitignoreで除外されていないか確認
+git check-ignore -v ファイル名
+
+# すべてのファイル（.gitignoreの対象も含む）を確認
+git status --ignored</code></pre>
+
+        <h3>コミット履歴を確認</h3>
+        <pre><code># 最近のコミットを確認
+git log --oneline -10
+
+# 詳細な履歴
+git log</code></pre>
+
+        <h3>リモートリポジトリの確認</h3>
+        <pre><code># リモートリポジトリ一覧
+git remote -v
+
+# リモートブランチ一覧
+git branch -r</code></pre>
+
+        <h2>💡 便利なTips</h2>
+
+        <h3>変更内容を確認してからPush</h3>
+        <pre><code># 変更内容を確認
+git diff
+
+# ステージング済みの変更を確認
+git diff --staged</code></pre>
+
+        <h3>コミットメッセージを後から変更</h3>
+        <pre><code># 最後のコミットメッセージを変更
+git commit --amend -m "新しいメッセージ"
+
+# 変更をPush（既にPush済みの場合）
+git push origin main --force</code></pre>
+
+        <div class="warning">
+            <p>⚠️ <strong>注意：</strong> <code>--force</code> は履歴を上書きするので、共同作業の場合は注意が必要です。</p>
+        </div>
+
+        <hr style="margin: 30px 0; border: none; border-top: 2px solid #ddd;">
+
+        <p style="text-align: center; color: #666;">
+            <strong>最後に：</strong> 困ったときは <code>git status</code> で現在の状態を確認することから始めましょう！
+        </p>
+    </div>
+</body>
+</html>
+
