@@ -1389,12 +1389,24 @@ class ChangeHistoryViewer:
         
 
         def log(message):
-
-            progress_text.insert(tk.END, message + "\n")
-
-            progress_text.see(tk.END)
-
-            progress_dialog.update()
+            """Thread-safe log function"""
+            try:
+                # Check if widget still exists
+                if not progress_text.winfo_exists():
+                    return
+                # Use after to ensure we're in the main thread
+                def safe_insert():
+                    try:
+                        if progress_text.winfo_exists():
+                            progress_text.insert(tk.END, message + "\n")
+                            progress_text.see(tk.END)
+                            progress_dialog.update()
+                    except:
+                        pass
+                self.root.after(0, safe_insert)
+            except:
+                # Widget might be destroyed, ignore
+                pass
 
         
 
