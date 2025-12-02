@@ -1627,30 +1627,62 @@ class ChangeHistoryViewer:
             
             # Get current branch name
             cmd = ["git", "branch", "--show-current"]
-            result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8')
+            result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace')
             current_branch = result.stdout.strip() or "master"
             
-            # Check if there are commits to push
-            cmd = ["git", "log", f"origin/{current_branch}..HEAD", "--oneline"]
-            result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8')
-            
+            # Check if remote exists
+            cmd = ["git", "remote", "-v"]
+            result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace')
             if not result.stdout.strip():
-                # Try with 'main' branch
-                cmd = ["git", "log", "origin/main..HEAD", "--oneline"]
-                result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8')
-                if not result.stdout.strip():
+                messagebox.showerror("エラー", "リモートリポジトリが設定されていません。\nまずリモートリポジトリを追加してください。")
+                return
+            
+            # Try to push to current branch first
+            branches_to_try = [current_branch]
+            if current_branch == "master":
+                branches_to_try.append("main")
+            elif current_branch == "main":
+                branches_to_try.append("master")
+            
+            pushed = False
+            error_messages = []
+            
+            for branch in branches_to_try:
+                # Check if there are commits to push (ignore error if remote branch doesn't exist)
+                cmd = ["git", "log", f"origin/{branch}..HEAD", "--oneline"]
+                result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace')
+                
+                # If command succeeded and there are commits, or if remote branch doesn't exist (first push)
+                if result.returncode == 0:
+                    if result.stdout.strip():
+                        # There are commits to push
+                        success, error_msg = self.git_push(branch, force=False)
+                        if success:
+                            messagebox.showinfo("成功", f"コミットをGitHubにプッシュしました。\nブランチ: {branch}")
+                            self.refresh_history()
+                            pushed = True
+                            break
+                        else:
+                            error_messages.append(f"{branch}: {error_msg}")
+                    else:
+                        # No commits to push for this branch
+                        continue
+                else:
+                    # Remote branch might not exist, try to push anyway
+                    success, error_msg = self.git_push(branch, force=False)
+                    if success:
+                        messagebox.showinfo("成功", f"コミットをGitHubにプッシュしました。\nブランチ: {branch}")
+                        self.refresh_history()
+                        pushed = True
+                        break
+                    else:
+                        error_messages.append(f"{branch}: {error_msg}")
+            
+            if not pushed:
+                if error_messages:
+                    messagebox.showerror("エラー", f"プッシュに失敗しました:\n\n" + "\n".join(error_messages))
+                else:
                     messagebox.showinfo("情報", "プッシュするコミットがありません。\nすべてのコミットは既にGitHubにプッシュされています。")
-                    return
-                current_branch = "main"
-            
-            # Push to GitHub
-            success, error_msg = self.git_push(current_branch, force=False)
-            
-            if success:
-                messagebox.showinfo("成功", f"コミットをGitHubにプッシュしました。\nブランチ: {current_branch}")
-                self.refresh_history()
-            else:
-                messagebox.showerror("エラー", f"プッシュに失敗しました:\n{error_msg}")
                 
         except Exception as e:
             messagebox.showerror("エラー", f"エラーが発生しました:\n{str(e)}")
