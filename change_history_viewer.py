@@ -221,6 +221,10 @@ class ChangeHistoryViewer:
         auto_commit_btn = ttk.Button(commit_frame, text="コミット & プッシュ", command=self.manual_commit_push)
 
         auto_commit_btn.pack(side=tk.LEFT, padx=(0, 5))
+        
+        push_only_btn = ttk.Button(commit_frame, text="プッシュのみ", command=self.push_existing_commits)
+
+        push_only_btn.pack(side=tk.LEFT, padx=(0, 5))
 
         
 
@@ -1615,6 +1619,41 @@ class ChangeHistoryViewer:
         else:
 
             messagebox.showwarning("Warning", message)
+    
+    def push_existing_commits(self):
+        """Push existing commits to GitHub (without committing new changes)"""
+        try:
+            os.chdir(self.project_path)
+            
+            # Get current branch name
+            cmd = ["git", "branch", "--show-current"]
+            result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8')
+            current_branch = result.stdout.strip() or "master"
+            
+            # Check if there are commits to push
+            cmd = ["git", "log", f"origin/{current_branch}..HEAD", "--oneline"]
+            result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8')
+            
+            if not result.stdout.strip():
+                # Try with 'main' branch
+                cmd = ["git", "log", "origin/main..HEAD", "--oneline"]
+                result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8')
+                if not result.stdout.strip():
+                    messagebox.showinfo("情報", "プッシュするコミットがありません。\nすべてのコミットは既にGitHubにプッシュされています。")
+                    return
+                current_branch = "main"
+            
+            # Push to GitHub
+            success, error_msg = self.git_push(current_branch, force=False)
+            
+            if success:
+                messagebox.showinfo("成功", f"コミットをGitHubにプッシュしました。\nブランチ: {current_branch}")
+                self.refresh_history()
+            else:
+                messagebox.showerror("エラー", f"プッシュに失敗しました:\n{error_msg}")
+                
+        except Exception as e:
+            messagebox.showerror("エラー", f"エラーが発生しました:\n{str(e)}")
 
     
 
