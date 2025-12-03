@@ -1650,6 +1650,37 @@ class ChangeHistoryViewer:
                 messagebox.showerror("エラー", "リモートリポジトリが設定されていません。\nまずリモートリポジトリを追加してください。")
                 return
             
+            # Check for uncommitted changes
+            cmd = ["git", "status", "--porcelain"]
+            result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace')
+            uncommitted_changes = result.stdout.strip()
+            
+            if uncommitted_changes:
+                # Count changes
+                change_lines = [line for line in uncommitted_changes.split('\n') if line.strip()]
+                change_count = len(change_lines)
+                
+                response = messagebox.askyesno(
+                    "未コミットの変更があります",
+                    f"未コミットの変更が {change_count} 個あります。\n\n"
+                    f"これらの変更をコミットしてからプッシュしますか？\n\n"
+                    f"「いいえ」を選択すると、既存のコミットのみをプッシュします。"
+                )
+                
+                if response:
+                    # Commit and push
+                    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    message = f"Auto-commit: {timestamp}"
+                    success, error_msg = self.commit_and_push(message)
+                    
+                    if success:
+                        messagebox.showinfo("成功", f"変更をコミットしてGitHubにプッシュしました。\n\n{change_count}個のファイルを更新しました。")
+                        self.refresh_history()
+                        return
+                    else:
+                        messagebox.showerror("エラー", f"コミットとプッシュに失敗しました:\n{error_msg}")
+                        return
+            
             # Get current branch name
             cmd = ["git", "branch", "--show-current"]
             result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace')
