@@ -1,0 +1,62 @@
+========================================
+  問題点と解決方法（明確版）
+========================================
+
+【問題点1: git stashが失敗】
+原因: 以下のファイルがGitで追跡されていない
+  - old/inspection_focus.py
+  - old/inspection_perfect.py
+  - old/inspection_ultra_fixed.py
+  - old/trainer_final.py
+  - scripts/train_4class_sparse_ensemble.py
+
+解決: これらのファイルをGit管理から除外する
+
+【問題点2: git pullが失敗】
+原因: ローカルの変更がマージで上書きされる可能性がある
+
+解決: 変更をリセットしてからマージする
+
+【問題点3: git pushが失敗】
+原因: リモートの方が進んでいる（non-fast-forward）
+
+解決: まずマージを成功させてからPushする
+
+========================================
+
+【やるべきこと（順番）】
+
+1. 問題のあるファイルをGit管理から除外
+   以下のコマンドを1つずつ実行してください：
+
+   git rm --cached old/inspection_focus.py
+
+   git rm --cached old/inspection_perfect.py
+
+   git rm --cached old/inspection_ultra_fixed.py
+
+   git rm --cached old/trainer_final.py
+
+   git rm --cached scripts/train_4class_sparse_ensemble.py
+
+2. すべての変更をリセット
+   git reset --hard HEAD
+
+3. リモートの最新版を取得
+   git fetch origin
+
+4. リモートの変更をマージ
+   git pull origin master
+
+5. Pushを実行
+   git push origin master
+
+========================================
+
+【自動で実行する場合】
+
+「マージ問題解決.bat」をダブルクリック
+→ 自動的に上記の手順を実行します
+
+========================================
+

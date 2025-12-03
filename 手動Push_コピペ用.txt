@@ -1,0 +1,50 @@
+========================================
+  コピー&ペースト用コマンド集
+========================================
+
+【基本の流れ】
+
+1. 状態確認
+git status
+
+2. ブランチ確認
+git branch
+
+3. リモート情報取得
+git fetch origin
+
+4. マージ
+git pull origin master
+
+5. Push
+git push origin master
+
+========================================
+
+【エラーが出た場合】
+
+マージを中止:
+git merge --abort
+
+変更をリセット:
+git reset --hard HEAD
+
+再度マージ:
+git pull origin master
+
+再度Push:
+git push origin master
+
+========================================
+
+【ブランチがmainの場合】
+
+4. マージ
+git pull origin main
+
+5. Push
+git push origin main
+
+========================================
+
+

@@ -1,0 +1,71 @@
+========================================
+  マージエラー解決手順（手動）
+========================================
+
+【問題】
+以下のファイルにローカルの変更があり、マージで上書きされる可能性があります：
+  - old/inspection_focus.py
+  - old/inspection_perfect.py
+  - old/inspection_ultra_fixed.py
+  - old/trainer_final.py
+  - scripts/train_4class_sparse_ensemble.py
+
+【解決方法1: 変更を一時保存（推奨）】
+
+1. 変更を一時保存:
+   git stash push -m "マージ前の一時保存" old/inspection_focus.py old/inspection_perfect.py old/inspection_ultra_fixed.py old/trainer_final.py scripts/train_4class_sparse_ensemble.py
+
+2. マージを実行:
+   git pull origin master
+
+3. 保存した変更を復元:
+   git stash pop
+
+4. Push:
+   git push origin master
+
+========================================
+
+【解決方法2: 変更を破棄する】
+
+注意: この方法は変更を失います
+
+1. 変更を破棄:
+   git checkout -- old/inspection_focus.py
+   git checkout -- old/inspection_perfect.py
+   git checkout -- old/inspection_ultra_fixed.py
+   git checkout -- old/trainer_final.py
+   git checkout -- scripts/train_4class_sparse_ensemble.py
+
+2. マージを実行:
+   git pull origin master
+
+3. Push:
+   git push origin master
+
+========================================
+
+【解決方法3: 変更をコミットする】
+
+1. 変更をステージング:
+   git add old/inspection_focus.py old/inspection_perfect.py old/inspection_ultra_fixed.py old/trainer_final.py scripts/train_4class_sparse_ensemble.py
+
+2. コミット:
+   git commit -m "変更を保存: old配下のファイル"
+
+3. マージを実行:
+   git pull origin master
+
+4. Push:
+   git push origin master
+
+========================================
+
+【推奨される方法】
+
+解決方法1（一時保存）が最も安全です。
+変更を失うことなく、マージを実行できます。
+
+========================================
+
+
